@@ -25,3 +25,25 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 }
+
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'turbolinks-android'
+
+    publishedGroupId = 'com.basecamp'
+    libraryName = 'Turbolinks Android'
+    artifact = 'turbolinks'
+
+    libraryDescription = 'Turbolinks for Android'
+    libraryVersion = '1.0.0'
+
+    siteUrl = 'https://github.com/basecamp/turbolinks-android'
+    gitUrl = 'https://github.com/basecamp/turbolinks-android.git'
+
+    developerId = 'basecamp'
+    developerName = 'Basecamp'
+    developerEmail = 'support@basecamp.com'
+}
+
+apply from: 'https://raw.githubusercontent.com/lateplate/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/lateplate/JCenter/master/bintrayv1.gradle'
