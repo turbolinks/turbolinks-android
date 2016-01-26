@@ -1,4 +1,4 @@
-package com.basecamp.android.turbolinks;
+package com.basecamp.turbolinks;
 
 public interface TurbolinksAdapter {
     void requestFailedWithStatusCode(int statusCode);

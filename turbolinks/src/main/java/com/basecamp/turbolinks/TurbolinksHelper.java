@@ -1,4 +1,4 @@
-package com.basecamp.android.turbolinks;
+package com.basecamp.turbolinks;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
