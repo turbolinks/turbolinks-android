@@ -1,4 +1,4 @@
-package com.basecamp.android.turbolinks;
+package com.basecamp.turbolinks;
 
 import org.junit.Test;
 
