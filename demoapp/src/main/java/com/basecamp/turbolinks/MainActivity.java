@@ -1,4 +1,4 @@
-package com.basecamp.android.turbolinks;
+package com.basecamp.turbolinks;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
