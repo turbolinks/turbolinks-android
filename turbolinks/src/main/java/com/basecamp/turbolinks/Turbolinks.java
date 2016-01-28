@@ -28,7 +28,7 @@ public class Turbolinks {
 
     boolean turbolinksInjected; // Script injected into DOM
     private boolean turbolinksIsReady; // Script finished and TL fully instantiated
-    private boolean restoreWithSnapshot;
+    private boolean restoreWithCachedSnapshot;
 
     private int progressBarDelay;
 
@@ -115,8 +115,8 @@ public class Turbolinks {
         return singleton;
     }
 
-    public Turbolinks restoreWithSnapshot(boolean restoreWithSnapshot) {
-        singleton.restoreWithSnapshot = restoreWithSnapshot;
+    public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+        singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
         return singleton;
     }
 
@@ -147,7 +147,7 @@ public class Turbolinks {
         }
 
         if (turbolinksIsReady) {
-            String action = restoreWithSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
+            String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
             runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
         }
 
@@ -174,12 +174,12 @@ public class Turbolinks {
 
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
-    public void visitStarted(String visitIdentifier, boolean visitHasSnapshot) {
+    public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
         singleton.currentVisitIdentifier = visitIdentifier;
 
         runJavascript("webView.changeHistoryForVisitWithIdentifier", visitIdentifier);
         runJavascript("webView.issueRequestForVisitWithIdentifier", visitIdentifier);
-        runJavascript("webView.restoreSnapshotForVisitWithIdentifier", visitIdentifier);
+        runJavascript("webView.loadCachedSnapshotForVisitWithIdentifier", visitIdentifier);
     }
 
     @SuppressWarnings("unused")
@@ -205,15 +205,8 @@ public class Turbolinks {
 
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
-    public void visitSnapshotRestored(String visitIdentifier) {
-        TurbolinksLog.d("visitSnapshotRestored hiding progress view for identifier: " + visitIdentifier);
-        hideProgressView(visitIdentifier);
-    }
-
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitResponseLoaded(String visitIdentifier) {
-        TurbolinksLog.d("visitResponseLoaded hiding progress view for identifier: " + visitIdentifier);
+    public void visitRendered(String visitIdentifier) {
+        TurbolinksLog.d("visitRendered hiding progress view for identifier: " + visitIdentifier);
         hideProgressView(visitIdentifier);
     }
 

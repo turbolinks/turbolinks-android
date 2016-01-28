@@ -8,11 +8,17 @@ function TLWebView(controller) {
 }
 
 TLWebView.prototype = {
-    // Current visit
+    // -----------------------------------------------------------------------
+    // Starting point
+    // -----------------------------------------------------------------------
 
     visitLocationWithActionAndRestorationIdentifier: function(location, action, restorationIdentifier) {
         this.controller.startVisitToLocationWithAction(location, action, restorationIdentifier)
     },
+
+    // -----------------------------------------------------------------------
+    // Current visit
+    // -----------------------------------------------------------------------
 
     issueRequestForVisitWithIdentifier: function(identifier) {
         if (identifier == this.currentVisit.identifier) {
@@ -26,9 +32,9 @@ TLWebView.prototype = {
         }
     },
 
-    restoreSnapshotForVisitWithIdentifier: function(identifier) {
+    loadCachedSnapshotForVisitWithIdentifier: function(identifier) {
         if (identifier == this.currentVisit.identifier) {
-            this.currentVisit.restoreSnapshot()
+            this.currentVisit.loadCachedSnapshot()
         }
     },
 
@@ -44,7 +50,9 @@ TLWebView.prototype = {
         }
     },
 
+    // -----------------------------------------------------------------------
     // Adapter
+    // -----------------------------------------------------------------------
 
     visitProposedToLocationWithAction: function(location, action) {
         TLNativeBridge.visitProposedToLocationWithAction(location.absoluteURL, action);
@@ -52,7 +60,7 @@ TLWebView.prototype = {
 
     visitStarted: function(visit) {
         this.currentVisit = visit
-        TLNativeBridge.visitStarted(visit.identifier, visit.hasSnapshot());
+        TLNativeBridge.visitStarted(visit.identifier, visit.hasCachedSnapshot());
     },
 
     visitRequestStarted: function(visit) {
@@ -69,15 +77,9 @@ TLWebView.prototype = {
     visitRequestFinished: function(visit) {
     },
 
-    visitSnapshotRestored: function(visit) {
+    visitRendered: function(visit) {
         this.afterNextRepaint(function() {
-            TLNativeBridge.visitSnapshotRestored(visit.identifier)
-        })
-    },
-
-    visitResponseLoaded: function(visit) {
-        this.afterNextRepaint(function() {
-            TLNativeBridge.visitResponseLoaded(visit.identifier)
+            TLNativeBridge.visitRendered(visit.identifier)
         })
     },
 
@@ -89,7 +91,9 @@ TLWebView.prototype = {
         TLNativeBridge.pageInvalidated()
     },
 
+    // -----------------------------------------------------------------------
     // Private
+    // -----------------------------------------------------------------------
 
     afterNextRepaint: function(callback) {
       requestAnimationFrame(function() {
