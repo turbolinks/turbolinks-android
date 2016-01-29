@@ -85,6 +85,15 @@ public class Turbolinks {
         return singleton;
     }
 
+    public Turbolinks adapter(TurbolinksAdapter turbolinksAdapter) {
+        if (turbolinksAdapter == null) {
+            throw new IllegalArgumentException("TurbolinksAdapter must not be null.");
+        }
+
+        singleton.turbolinksAdapter = turbolinksAdapter;
+        return singleton;
+    }
+
     public Turbolinks view(TurbolinksView turbolinksView) {
         if (turbolinksView == null) {
             throw new IllegalArgumentException("TurbolinksView must not be null.");
@@ -109,11 +118,6 @@ public class Turbolinks {
     // ---------------------------------------------------
     // Optional chained methods
     // ---------------------------------------------------
-
-    public Turbolinks adapter(TurbolinksAdapter turbolinksAdapter) {
-        singleton.turbolinksAdapter = turbolinksAdapter;
-        return singleton;
-    }
 
     public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
@@ -169,7 +173,7 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitProposedToLocationWithAction(String location, String action) {
-        if (turbolinksAdapter != null) turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+        turbolinksAdapter.visitProposedToLocationWithAction(location, action);
     }
 
     @SuppressWarnings("unused")
@@ -193,7 +197,7 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
-        if (turbolinksAdapter != null && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+        if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
@@ -215,7 +219,7 @@ public class Turbolinks {
     public void visitCompleted(String visitIdentifier, String restorationIdentifier) {
         addRestorationIdentifierToMap(restorationIdentifier);
 
-        if (turbolinksAdapter != null && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+        if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
@@ -234,7 +238,7 @@ public class Turbolinks {
         TurbolinksHelper.runOnMainThread(context, new Runnable() {
             @Override
             public void run() { // route through normal chain so progress view is shown, regular logging, etc.
-                if (turbolinksAdapter != null) turbolinksAdapter.pageInvalidated();
+                turbolinksAdapter.pageInvalidated();
 
                 singleton.visit();
             }
@@ -382,7 +386,7 @@ public class Turbolinks {
             public void onPageFinished(WebView view, String location) {
                 if (!turbolinksInjected) {
                     TurbolinksHelper.injectTurbolinksBridge(singleton, context, webView);
-                    if (turbolinksAdapter != null) turbolinksAdapter.onPageFinished();
+                    turbolinksAdapter.onPageFinished();
 
                     TurbolinksLog.d("Page finished: " + location);
                 }
@@ -414,7 +418,7 @@ public class Turbolinks {
                 super.onReceivedError(view, errorCode, description, failingUrl);
                 resetToColdBoot();
 
-                if (turbolinksAdapter != null) turbolinksAdapter.onReceivedError(errorCode);
+                turbolinksAdapter.onReceivedError(errorCode);
                 TurbolinksLog.d("onReceivedError: " + errorCode);
             }
 
@@ -425,7 +429,7 @@ public class Turbolinks {
 
                 if (request.isForMainFrame()) {
                     resetToColdBoot();
-                    if (turbolinksAdapter != null) turbolinksAdapter.onReceivedError(errorResponse.getStatusCode());
+                    turbolinksAdapter.onReceivedError(errorResponse.getStatusCode());
                     TurbolinksLog.d("onReceivedHttpError: " + errorResponse.getStatusCode());
                 }
             }
