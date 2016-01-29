@@ -8,9 +8,6 @@
         android:id="@+id/turbolinks_default_progress_bar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:indeterminate="true"
-        android:maxHeight="32dp"
-        android:maxWidth="32dp"/>
+        android:layout_gravity="center"/>
 
 </FrameLayout>
