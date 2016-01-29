@@ -2,7 +2,7 @@ package com.basecamp.turbolinks;
 
 import android.util.Log;
 
-public class TurbolinksLog {
+class TurbolinksLog {
     private static final String DEFAULT_TAG = "Turbolinks";
     private static boolean debugLoggingEnabled = false;
 

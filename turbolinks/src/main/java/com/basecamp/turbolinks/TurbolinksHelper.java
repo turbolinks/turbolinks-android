@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-public class TurbolinksHelper {
+class TurbolinksHelper {
     private static String scriptInjectionFormat = "(function(){var parent = document.getElementsByTagName('head').item(0);var script = document.createElement('script');script.type = 'text/javascript';script.innerHTML = window.atob('%s');parent.appendChild(script);return true;})()";
 
     static WebView createWebView(Context context) {
