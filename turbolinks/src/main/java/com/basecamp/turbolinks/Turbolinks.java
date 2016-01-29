@@ -8,6 +8,7 @@ import android.content.MutableContextWrapper;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 public class Turbolinks {
     static final String ACTION_ADVANCE = "advance";
     static final String ACTION_RESTORE = "restore";
+    static final int TURBOLINKS_PROGRESS_BAR_DELAY = 500;
 
     static volatile Turbolinks singleton = null;
 
@@ -42,7 +44,7 @@ public class Turbolinks {
     private HashMap<String, Object> javascriptInterfaces;
 
     private Activity attachedActivity;
-    private View progressLayout;
+    private View progressView;
     private View progressBar;
     private TurbolinksView turbolinksView;
     private TurbolinksAdapter turbolinksAdapter;
@@ -124,14 +126,9 @@ public class Turbolinks {
         return singleton;
     }
 
-    public Turbolinks progressLayout(View progressLayout) {
-        singleton.progressLayout = progressLayout;
-
-        return singleton;
-    }
-
-    public Turbolinks progressBar(int resId, int progressBarDelay) {
-        singleton.progressBar = progressLayout.findViewById(resId);
+    public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
+        singleton.progressView = progressView;
+        singleton.progressBar = progressView.findViewById(progressBarResId);
         singleton.progressBarDelay = progressBarDelay;
 
         if (progressBar == null) {
@@ -146,9 +143,15 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     public void visit() {
-        if (singleton.progressLayout != null) { // Executed from here to account for progress bar delay
-            turbolinksView.showProgressView(progressLayout, progressBar, progressBarDelay);
+        if(singleton.progressView == null) {
+            singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
+            singleton.progressView.setBackground(turbolinksView.getBackground());
+            singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
+            singleton.progressBarDelay = TURBOLINKS_PROGRESS_BAR_DELAY;
         }
+
+        // Executed from here to account for progress bar delay
+        turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
 
         if (turbolinksIsReady) {
             String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
@@ -287,7 +290,8 @@ public class Turbolinks {
                 // to hide the progress view. Checking turbolinksIsReady ensures progress view isn't hidden too soon by the non cold boot.
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
-                    turbolinksView.hideProgressView();
+                    turbolinksView.removeProgressView();
+                    Turbolinks.this.progressView = null;
                 }
             }
         });
@@ -301,7 +305,7 @@ public class Turbolinks {
             public void run() {
                 TurbolinksLog.d("Error instantiating turbolinks.js - resetting to cold boot.");
                 resetToColdBoot();
-                turbolinksView.hideProgressView();
+                turbolinksView.removeProgressView();
             }
         });
     }

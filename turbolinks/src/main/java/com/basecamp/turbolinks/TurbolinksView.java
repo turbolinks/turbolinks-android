@@ -45,21 +45,19 @@ public class TurbolinksView extends FrameLayout {
         progressView.setClickable(true);
         addView(progressView);
 
-        if (progressBar != null) {
-            progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
 
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setVisibility(View.VISIBLE);
-                }
-            }, delay);
-        }
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }, delay);
     }
 
-    void hideProgressView() {
-        removeProgressView();
+    void removeProgressView() {
+        removeView(progressView);
     }
 
     void attachWebView(WebView webView) {
@@ -74,15 +72,5 @@ public class TurbolinksView extends FrameLayout {
         }
 
         addView(webView, 0);
-    }
-
-    // ---------------------------------------------------
-    // Private
-    // ---------------------------------------------------
-
-    private void removeProgressView() {
-        if (progressView != null) {
-            removeView(progressView);
-        }
     }
 }
