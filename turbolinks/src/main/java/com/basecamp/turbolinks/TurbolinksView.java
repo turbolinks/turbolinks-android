@@ -17,6 +17,7 @@ public class TurbolinksView extends FrameLayout {
     // ---------------------------------------------------
     // Constructors
     // ---------------------------------------------------
+
     public TurbolinksView(Context context) {
         super(context);
     }

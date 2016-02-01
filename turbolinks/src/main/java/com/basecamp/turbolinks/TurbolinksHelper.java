@@ -31,6 +31,25 @@ class TurbolinksHelper {
         return webView;
     }
 
+    // http://stackoverflow.com/questions/3286067/url-encoding-in-android/8962879#8962879
+    static String encodeUrl(String originalUrl) {
+        try {
+            URL newUrl = new URL(originalUrl);
+            URI uri = new URI(newUrl.getProtocol(), newUrl.getUserInfo(), newUrl.getHost(), newUrl.getPort(), newUrl.getPath(), newUrl.getQuery(), newUrl.getRef());
+            return uri.toURL().toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    static String getContentFromAssetFile(Context context, String filePath) throws IOException {
+        InputStream inputStream = context.getAssets().open(filePath);
+        byte[] buffer = new byte[inputStream.available()];
+        inputStream.read(buffer);
+        inputStream.close();
+        return Base64.encodeToString(buffer, Base64.NO_WRAP);
+    }
+
     static void injectTurbolinksBridge(final Turbolinks singleton, Context context, WebView webView) {
         try {
             String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks.js");
@@ -47,15 +66,6 @@ class TurbolinksHelper {
         } catch (IOException e) {
             TurbolinksLog.e("Error injecting script file into webview: " + e.toString());
         }
-    }
-
-    static void runRawJavascript(Context context, final WebView webView, final String javascript) {
-        runOnMainThread(context, new Runnable() {
-            @Override
-            public void run() {
-                webView.loadUrl("javascript:" + javascript);
-            }
-        });
     }
 
     static void runJavascript(Context context, final WebView webView, String functionName, Object... params) {
@@ -80,23 +90,13 @@ class TurbolinksHelper {
         });
     }
 
-    static String getContentFromAssetFile(Context context, String filePath) throws IOException {
-        InputStream inputStream = context.getAssets().open(filePath);
-        byte[] buffer = new byte[inputStream.available()];
-        inputStream.read(buffer);
-        inputStream.close();
-        return Base64.encodeToString(buffer, Base64.NO_WRAP);
-    }
-
-    // http://stackoverflow.com/questions/3286067/url-encoding-in-android/8962879#8962879
-    static String encodeUrl(String originalUrl) {
-        try {
-            URL newUrl = new URL(originalUrl);
-            URI uri = new URI(newUrl.getProtocol(), newUrl.getUserInfo(), newUrl.getHost(), newUrl.getPort(), newUrl.getPath(), newUrl.getQuery(), newUrl.getRef());
-            return uri.toURL().toString();
-        } catch (Exception e) {
-            return null;
-        }
+    static void runJavascriptRaw(Context context, final WebView webView, final String javascript) {
+        runOnMainThread(context, new Runnable() {
+            @Override
+            public void run() {
+                webView.loadUrl("javascript:" + javascript);
+            }
+        });
     }
 
     static void runOnMainThread(Context context, Runnable runnable) {

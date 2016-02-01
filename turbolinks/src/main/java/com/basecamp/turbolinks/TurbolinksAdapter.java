@@ -1,10 +1,10 @@
 package com.basecamp.turbolinks;
 
 public interface TurbolinksAdapter {
-    void requestFailedWithStatusCode(int statusCode);
     void onPageFinished();
     void onReceivedError(int errorCode);
+    void pageInvalidated();
+    void requestFailedWithStatusCode(int statusCode);
     void visitCompleted();
     void visitProposedToLocationWithAction(String location, String action);
-    void pageInvalidated();
 }
