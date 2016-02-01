@@ -10,6 +10,7 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -143,15 +144,7 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     public void visit() {
-        if(singleton.progressView == null) {
-            singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
-            singleton.progressView.setBackground(turbolinksView.getBackground());
-            singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
-            singleton.progressBarDelay = TURBOLINKS_PROGRESS_BAR_DELAY;
-        }
-
-        // Executed from here to account for progress bar delay
-        turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
+        initProgressView();
 
         if (turbolinksIsReady) {
             String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
@@ -448,5 +441,23 @@ public class Turbolinks {
 
     private String getRestorationIdentifierFromMap() {
         return restorationIdentifierMap.get(attachedActivity.toString());
+    }
+
+    private void initProgressView() {
+        // No custom progress view provided, use default
+        if (singleton.progressView == null) {
+            singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
+            singleton.progressView.setBackground(turbolinksView.getBackground());
+            singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
+            singleton.progressBarDelay = TURBOLINKS_PROGRESS_BAR_DELAY;
+        }
+
+        // The default progress view is reused, so ensure it's detached from its previous parent first
+        if (singleton.progressView.getParent() != null) {
+            ((ViewGroup)singleton.progressView.getParent()).removeView(singleton.progressView);
+        }
+
+        // Executed from here to account for progress bar delay
+        turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
     }
 }
