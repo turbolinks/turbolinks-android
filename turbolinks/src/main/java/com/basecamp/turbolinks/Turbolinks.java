@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class Turbolinks {
-    boolean turbolinksInjected; // Script injected into DOM
+    boolean turbolinksBridgeInjected; // Script injected into DOM
 
     static volatile Turbolinks singleton = null;
 
@@ -58,7 +58,7 @@ public class Turbolinks {
 
         this.context = context;
         this.webView = TurbolinksHelper.createWebView(context);
-        this.webView.addJavascriptInterface(this, "TLNativeBridge");
+        this.webView.addJavascriptInterface(this, "TurbolinksNative");
         this.webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -67,7 +67,7 @@ public class Turbolinks {
 
             @Override
             public void onPageFinished(WebView view, String location) {
-                if (!turbolinksInjected) {
+                if (!turbolinksBridgeInjected) {
                     TurbolinksHelper.injectTurbolinksBridge(singleton, context, webView);
                     turbolinksAdapter.onPageFinished();
 
@@ -166,31 +166,6 @@ public class Turbolinks {
         return singleton;
     }
 
-    // ---------------------------------------------------
-    // Optional chained methods
-    // ---------------------------------------------------
-
-    public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
-        singleton.progressView = progressView;
-        singleton.progressBar = progressView.findViewById(progressBarResId);
-        singleton.progressBarDelay = progressBarDelay;
-
-        if (singleton.progressBar == null) {
-            throw new IllegalArgumentException("A progress bar view must be provided in your custom progressView.");
-        }
-
-        return singleton;
-    }
-
-    public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
-        singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
-        return singleton;
-    }
-
-    // ---------------------------------------------------
-    // Execute chained methods
-    // ---------------------------------------------------
-
     public void visit(String location) {
         singleton.location = location;
 
@@ -213,7 +188,28 @@ public class Turbolinks {
     }
 
     // ---------------------------------------------------
-    // TLNativeBridge adapter methods
+    // Optional chained methods
+    // ---------------------------------------------------
+
+    public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
+        singleton.progressView = progressView;
+        singleton.progressBar = progressView.findViewById(progressBarResId);
+        singleton.progressBarDelay = progressBarDelay;
+
+        if (singleton.progressBar == null) {
+            throw new IllegalArgumentException("A progress bar view must be provided in your custom progressView.");
+        }
+
+        return singleton;
+    }
+
+    public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+        singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
+        return singleton;
+    }
+
+    // ---------------------------------------------------
+    // TurbolinksNative adapter methods
     // ---------------------------------------------------
 
     @SuppressWarnings("unused")
@@ -292,7 +288,7 @@ public class Turbolinks {
     }
 
     // ---------------------------------------------------
-    // TLNativeBridge helper methods
+    // TurbolinksNative helper methods
     // ---------------------------------------------------
 
     @SuppressWarnings("unused")
@@ -346,7 +342,7 @@ public class Turbolinks {
         TurbolinksHelper.runOnMainThread(context, new Runnable() {
             @Override
             public void run() {
-                TurbolinksLog.d("Error instantiating turbolinks.js - resetting to cold boot.");
+                TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
                 resetToColdBoot();
                 singleton.turbolinksView.removeProgressView();
             }
@@ -354,7 +350,7 @@ public class Turbolinks {
     }
 
     // -----------------------------------------------------------------------
-    // Public accessors
+    // Public
     // -----------------------------------------------------------------------
 
     @SuppressLint("JavascriptInterface")
@@ -385,7 +381,7 @@ public class Turbolinks {
 
     public static void resetToColdBoot() {
         if (singleton != null) {
-            singleton.turbolinksInjected = false;
+            singleton.turbolinksBridgeInjected = false;
             singleton.turbolinksIsReady = false;
             singleton.coldBootInProgress = false;
         }

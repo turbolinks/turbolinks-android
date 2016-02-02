@@ -23,6 +23,10 @@ import java.net.URL;
 class TurbolinksHelper {
     private static String scriptInjectionFormat = "(function(){var parent = document.getElementsByTagName('head').item(0);var script = document.createElement('script');script.type = 'text/javascript';script.innerHTML = window.atob('%s');parent.appendChild(script);return true;})()";
 
+    // ---------------------------------------------------
+    // Package public
+    // ---------------------------------------------------
+
     static WebView createWebView(Context context) {
         MutableContextWrapper contextWrapper = new MutableContextWrapper(context.getApplicationContext());
         WebView webView = new WebView(contextWrapper);
@@ -52,14 +56,14 @@ class TurbolinksHelper {
 
     static void injectTurbolinksBridge(final Turbolinks singleton, Context context, WebView webView) {
         try {
-            String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks.js");
+            String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js");
             String jsCall = String.format(scriptInjectionFormat, script);
 
             webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
                     if (singleton != null) {
-                        singleton.turbolinksInjected = Boolean.parseBoolean(s);
+                        singleton.turbolinksBridgeInjected = Boolean.parseBoolean(s);
                     }
                 }
             });
