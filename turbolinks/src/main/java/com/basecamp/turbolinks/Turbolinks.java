@@ -19,10 +19,21 @@ import android.webkit.WebViewClient;
 import java.util.Date;
 import java.util.HashMap;
 
+/**
+ * <p>The main concrete class to use Turbolinks 5 in your app.</p>
+ */
 public class Turbolinks {
+
+    // ---------------------------------------------------
+    // Package public vars
+    // ---------------------------------------------------
     boolean turbolinksBridgeInjected; // Script injected into DOM
 
     static volatile Turbolinks singleton = null;
+
+    // ---------------------------------------------------
+    // Final vars
+    // ---------------------------------------------------
 
     private static final String ACTION_ADVANCE = "advance";
     private static final String ACTION_RESTORE = "restore";
@@ -31,12 +42,15 @@ public class Turbolinks {
     private final Context context;
     private final WebView webView;
 
+    // ---------------------------------------------------
+    // Private vars
+    // ---------------------------------------------------
+
     private boolean coldBootInProgress;
     private boolean restoreWithCachedSnapshot;
     private boolean turbolinksIsReady; // Script finished and TL fully instantiated
     private int progressBarDelay;
     private long previousOverrideTime;
-
     private Activity activity;
     private HashMap<String, Object> javascriptInterfaces;
     private HashMap<String, String> restorationIdentifierMap;
@@ -51,6 +65,11 @@ public class Turbolinks {
     // Constructor
     // ---------------------------------------------------
 
+    /**
+     * Private constructor called by {@link #initialize(Context)} to return a new Turbolinks instance
+     * that can be used as the singleton throughout the app's in-memory session.
+     * @param context A standard Android context.
+     */
     private Turbolinks(final Context context) {
         if (context == null) {
             throw new IllegalArgumentException("Context must not be null.");
@@ -123,6 +142,15 @@ public class Turbolinks {
     // Initialization
     // ---------------------------------------------------
 
+    /**
+     * <p>Must be the first step in using Turbolinks that instantiates a new singleton object that will
+     * be used throughout the lifetime of the app while in memory.</p>
+     *
+     * <p>You only need to initialize Turbolinks once, and you can check if it's already initialized
+     * with {@link #isInitialized()}.</p>
+     *
+     * @param context
+     */
     public static void initialize(Context context) {
         if (singleton != null) {
             throw new IllegalStateException("Turbolinks.initialize() has already been called.");
@@ -143,6 +171,15 @@ public class Turbolinks {
     // Required chained methods
     // ---------------------------------------------------
 
+    /**
+     * <p><b>REQUIRED</b> Turbolinks requires an Activity context to be provided for clarity -- in other words, you cannot
+     * use an ApplicationContext with Turbolinks.</p>
+     *
+     * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures there is
+     * a one-to-one relationship maintained between internal activity IDs and visit IDs.</p>
+     * @param activity An Android Activity, one per visit.
+     * @return The Turbolinks singleton, to continue the chained calls.
+     */
     public static Turbolinks activity(Activity activity) {
         singleton.activity = activity;
 
@@ -154,11 +191,24 @@ public class Turbolinks {
         return singleton;
     }
 
+    /**
+     * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required to that callbacks during the Turbolinks
+     * event lifecycle can be passed back to your app.</p>
+     * @param turbolinksAdapter Any class that ipmlements {@link TurbolinksAdapter}.
+     * @return The Turbolinks singleton, to continue the chained calls.
+     */
     public Turbolinks adapter(TurbolinksAdapter turbolinksAdapter) {
         singleton.turbolinksAdapter = turbolinksAdapter;
         return singleton;
     }
 
+    /**
+     * <p><b>REQUIRED</b> A {@link TurbolinksView} object that's been inflated in a custom layout is required so that
+     * library can manage various view-related tasks: attaching/detaching the internal web view,
+     * showing/hiding a progress loading view, etc.</p>
+     * @param turbolinksView An inflated TurbolinksView from your custom layout.
+     * @return The Turbolinks singleton, to continue the chained calls.
+     */
     public Turbolinks view(TurbolinksView turbolinksView) {
         singleton.turbolinksView = turbolinksView;
         singleton.turbolinksView.attachWebView(singleton.webView);
@@ -166,6 +216,12 @@ public class Turbolinks {
         return singleton;
     }
 
+    /**
+     * <p><b>REQUIRED</b> The call that executes a Turbolinks visit. Must be called at the end of the chain.
+     * All required parameters will first be validated before firing -- IllegalArgumentException will
+     * be thrown if they aren't all provided.</p>
+     * @param location The URL to visit.
+     */
     public void visit(String location) {
         singleton.location = location;
 
@@ -191,6 +247,16 @@ public class Turbolinks {
     // Optional chained methods
     // ---------------------------------------------------
 
+    /**
+     * <p><b>OPTIONAL</b> This will override the default progress view/progress bar that's provided
+     * out of the box. This allows you to customize how you want the progress view to look while
+     * pages are loading.</p>
+     * @param progressView A custom progressView object.
+     * @param progressBarResId The resource ID of a progressBar object inside the progressView.
+     * @param progressBarDelay The delay, in milliseconds, before the progress bar should be displayed
+     *                         inside the progress view (default is 500 ms).
+     * @return The Turbolinks singleton, to continue the chained calls.
+     */
     public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
         singleton.progressView = progressView;
         singleton.progressBar = progressView.findViewById(progressBarResId);
@@ -203,6 +269,17 @@ public class Turbolinks {
         return singleton;
     }
 
+    /**
+     * <p><b>OPTIONAL</b> By default Turbolinks will "advance" to the next page and scroll position
+     * will not be restored. Optionally calling this method allows you to set the behavior on a per-visit
+     * basis.</p>
+     *
+     * <p>NOTE: The cache behavior is maintained between requests, so if you set this manually, you
+     * should set it for every visit call.</p>
+     * @param restoreWithCachedSnapshot If true, will restore scroll position. If false, will not restore
+     *                                  scroll position.
+     * @return The Turbolinks singleton, to continue the chained calls.
+     */
     public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
         return singleton;
