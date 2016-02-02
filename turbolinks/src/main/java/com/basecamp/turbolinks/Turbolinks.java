@@ -198,9 +198,7 @@ public class Turbolinks {
         initProgressView();
 
         if (singleton.turbolinksIsReady) {
-            String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
-            runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
-            singleton.restoreWithCachedSnapshot = false; // reset each call to default to false
+            visitCurrentLocationWithTurbolinks();
         }
 
         if (!singleton.turbolinksIsReady && !singleton.coldBootInProgress) {
@@ -288,7 +286,7 @@ public class Turbolinks {
             public void run() { // route through normal chain so progress view is shown, regular logging, etc.
                 singleton.turbolinksAdapter.pageInvalidated();
 
-                revisit();
+                visit(singleton.location);
             }
         });
     }
@@ -330,7 +328,7 @@ public class Turbolinks {
                 @Override
                 public void run() {
                     TurbolinksLog.d("Turbolinks is ready");
-                    revisit();
+                    visitCurrentLocationWithTurbolinks();
                 }
             });
 
@@ -445,9 +443,11 @@ public class Turbolinks {
         singleton.turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
     }
 
-    private void revisit() {
-        TurbolinksLog.d("Revisiting: " + singleton.location);
-        singleton.visit(singleton.location);
+    private void visitCurrentLocationWithTurbolinks() {
+        TurbolinksLog.d("Visiting current stored location: " + singleton.location);
+
+        String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
+        visitLocationWithAction(TurbolinksHelper.encodeUrl(location), action);
     }
 
     private void validateRequiredParams() {
