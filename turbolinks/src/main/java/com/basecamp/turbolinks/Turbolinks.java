@@ -37,7 +37,9 @@ public class Turbolinks {
 
     private static final String ACTION_ADVANCE = "advance";
     private static final String ACTION_RESTORE = "restore";
-    private static final int TURBOLINKS_PROGRESS_BAR_DELAY = 500;
+    private static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
+    private static final int PROGRESS_BAR_DELAY = 500;
+
 
     private final Context context;
     private final WebView webView;
@@ -77,7 +79,7 @@ public class Turbolinks {
 
         this.context = context;
         this.webView = TurbolinksHelper.createWebView(context);
-        this.webView.addJavascriptInterface(this, "TurbolinksNative");
+        this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -289,12 +291,28 @@ public class Turbolinks {
     // TurbolinksNative adapter methods
     // ---------------------------------------------------
 
+    /**
+     * <p>Called by Turbolinks when a new visit is initiated from a web view link.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param location URL to be visited.
+     * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitProposedToLocationWithAction(String location, String action) {
         singleton.turbolinksAdapter.visitProposedToLocationWithAction(location, action);
     }
 
+    /**
+     * <p>Called by Turbolinks when a new visit has just started.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param visitIdentifier A unique identifier for the visit.
+     * @param visitHasCachedSnapshot Whether the visit has a cached snapshot available.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
@@ -305,6 +323,13 @@ public class Turbolinks {
         runJavascript("webView.loadCachedSnapshotForVisitWithIdentifier", visitIdentifier);
     }
 
+    /**
+     * <p>Called by Turbolinks when the HTTP request has been completed.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param visitIdentifier A unique identifier for the visit.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRequestCompleted(String visitIdentifier) {
@@ -313,6 +338,14 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Called by Turbolinks when the HTTP request has failed.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param visitIdentifier A unique identifier for the visit.
+     * @param statusCode The HTTP status code that caused the failure.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
@@ -326,6 +359,13 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Called by Turbolinks once the page has been fully rendered in the web view.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param visitIdentifier A unique identifier for the visit.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRendered(String visitIdentifier) {
@@ -333,6 +373,15 @@ public class Turbolinks {
         hideProgressView(visitIdentifier);
     }
 
+    /**
+     * <p>Called by Turbolinks when the visit is fully completed -- request successful and page rendered.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     *
+     * @param visitIdentifier A unique identifier for the visit.
+     * @param restorationIdentifier A unique identifier for restoring the page and scroll position from cache.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitCompleted(String visitIdentifier, String restorationIdentifier) {
@@ -348,6 +397,13 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Called when Turbolinks detects that the page being visited has been invalidated, typically
+     * by new resources in the the page HEAD.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void pageInvalidated() {
@@ -368,6 +424,13 @@ public class Turbolinks {
     // TurbolinksNative helper methods
     // ---------------------------------------------------
 
+    /**
+     * <p>Hides the progress view when the page is fully rendered.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param visitIdentifier A unique identifier for the visit.
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void hideProgressView(final String visitIdentifier) {
@@ -391,6 +454,13 @@ public class Turbolinks {
         addRestorationIdentifierToMap(firstRestorationIdentifier);
     }
 
+    /**
+     * <p>Sets internal flags that indicate whether Turbolinks in the web view is ready for use.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     * @param turbolinksIsReady
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void setTurbolinksIsReady(boolean turbolinksIsReady) {
@@ -413,6 +483,12 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Handles the error condition when reaching a page without Turbolinks.</p>
+     *
+     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
+     * purposes, you should never call this directly.</p>
+     */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void turbolinksDoesNotExist() {
@@ -430,8 +506,18 @@ public class Turbolinks {
     // Public
     // -----------------------------------------------------------------------
 
+    /**
+     * <p>Provides the ability to add an arbitrary number of custom Javascript Interfaces to the built-in
+     * Turbolinks web view.</p>
+     * @param object The object with annotated JavascriptInterface methods
+     * @param name The unique name for the interface (must not use the reserved name "TurbolinksNative")
+     */
     @SuppressLint("JavascriptInterface")
     public static void addJavascriptInterface(Object object, String name) {
+        if (TextUtils.equals(name, JAVASCRIPT_INTERFACE_NAME)) {
+            throw new IllegalStateException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
+        }
+
         if (singleton.javascriptInterfaces.get(name) == null) {
             singleton.javascriptInterfaces.put(name, object);
             singleton.webView.addJavascriptInterface(object, name);
@@ -440,22 +526,41 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Returns the activity attached to the Turbolinks call.</p>
+     * @return The attached activity, or null if Turbolinks is not initialized.
+     */
     public static Activity getActivity() {
         return isInitialized() ? singleton.activity : null;
     }
 
+    /**
+     * <p>Returns the internal WebView used by Turbolinks.</p>
+     * @return The WebView used by Turbolinks, or null if Turbolinks is not initialized.
+     */
     public static WebView getWebView() {
         return isInitialized() ? singleton.webView : null;
     }
 
+    /**
+     * <p>Whether or not the Turboolinks singleton is ready for use.</p>
+     * @return True if singleton != null, otherwise false.
+     */
     public static boolean isInitialized() {
         return singleton != null;
     }
 
+    /**
+     * <p>Sets the singleton to null and Turbolinks into an uninitialized state.</p>
+     */
     public static void reset() {
         singleton = null;
     }
 
+    /**
+     * <p>Resets the singleton to go through the full cold booting sequence (full page load) on the
+     * next Turbolinks visit.</p>
+     */
     public static void resetToColdBoot() {
         if (singleton != null) {
             singleton.turbolinksBridgeInjected = false;
@@ -464,22 +569,44 @@ public class Turbolinks {
         }
     }
 
+    /**
+     * <p>Runs a Javascript function with any number of arbitrary params in the Turbolinks web view.</p>
+     * @param functionName The name of the function, without any parenthesis or params
+     * @param params A comma delimited list of params. Params will be automatically JSONified.
+     */
     public static void runJavascript(final String functionName, final Object... params) {
         TurbolinksHelper.runJavascript(singleton.context, singleton.webView, functionName, params);
     }
 
+    /**
+     * <p>Runs raw Javascript in web view. Simply wraps the loadUrl("javascript: methodName()") call.</p>
+     * @param rawJavascript
+     */
     public static void runJavascriptRaw(String rawJavascript) {
         TurbolinksHelper.runJavascriptRaw(singleton.context, singleton.webView, rawJavascript);
     }
 
+    /**
+     * <p>Tells the logger whether to allow logging in debug mode.</p>
+     * @param enabled If true, debug logging is enabled.
+     */
     public static void setDebugLoggingEnabled(boolean enabled) {
         TurbolinksLog.setDebugLoggingEnabled(enabled);
     }
 
+    /**
+     * <p>Provides the status of whether Turbolinks is initialized and ready for use.</p>
+     * @return True if Turbolinks is both initialized and ready for use.
+     */
     public static boolean turbolinksIsReady() {
         return isInitialized() && singleton.turbolinksIsReady;
     }
 
+    /**
+     * <p>A convenience method to fire a Turbolinks visit manually.</p>
+     * @param location URL to visit.
+     * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
+     */
     public static void visitLocationWithAction(String location, String action) {
         Turbolinks.runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, singleton.getRestorationIdentifierFromMap());
     }
@@ -488,23 +615,37 @@ public class Turbolinks {
     // Private
     // ---------------------------------------------------
 
+    /**
+     * <p>Adds the restoration (cached scroll position) identifier to the local Hashmap.</p>
+     * @param value Restoration ID provided by Turbolinks.
+     */
     private void addRestorationIdentifierToMap(String value) {
         if (singleton.activity != null) {
             singleton.restorationIdentifierMap.put(activity.toString(), value);
         }
     }
 
+    /**
+     * <p>Gets the restoration ID for the current activity.</p>
+     * @return Restoration ID for the current activity.
+     */
     private String getRestorationIdentifierFromMap() {
         return singleton.restorationIdentifierMap.get(activity.toString());
     }
 
+    /**
+     * <p>Shows the progress view, either a custom one provided or the default.</p>
+     *
+     * <p>A default progress view is inflated if {@link #progressView} isn't called.
+     * If already inflated, progress view is fully detached before being shown since it's reused.</p>
+     */
     private void initProgressView() {
         // No custom progress view provided, use default
         if (singleton.progressView == null) {
             singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
             singleton.progressView.setBackground(turbolinksView.getBackground());
             singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
-            singleton.progressBarDelay = TURBOLINKS_PROGRESS_BAR_DELAY;
+            singleton.progressBarDelay = PROGRESS_BAR_DELAY;
         }
 
         // A progress view can be reused, so ensure it's detached from its previous parent first
@@ -516,6 +657,11 @@ public class Turbolinks {
         singleton.turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
     }
 
+    /**
+     * <p>Convenience method to simply revisit the current location in the singleton. Useful so that
+     * different visit logic can be wrappered around this call in {@link #visit} or
+     * {@link #setTurbolinksIsReady(boolean)}</p>
+     */
     private void visitCurrentLocationWithTurbolinks() {
         TurbolinksLog.d("Visiting current stored location: " + singleton.location);
 
@@ -523,6 +669,11 @@ public class Turbolinks {
         visitLocationWithAction(TurbolinksHelper.encodeUrl(location), action);
     }
 
+    /**
+     * <p>Ensures all required chained calls/parameters ({@link #initialize(Context)}, {@link #activity},
+     * {@link #adapter(TurbolinksAdapter)}, {@link #turbolinksView}, and location}) are
+     * set before calling {@link #visit(String)}.</p>
+     */
     private void validateRequiredParams() {
         if (singleton == null) {
             throw new IllegalStateException("Turbolinks.initialize(context) must be called.");
