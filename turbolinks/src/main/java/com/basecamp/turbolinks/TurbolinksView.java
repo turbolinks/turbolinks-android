@@ -18,18 +18,44 @@ public class TurbolinksView extends FrameLayout {
     // Constructors
     // ---------------------------------------------------
 
+    /**
+     * <p>Constructor to match FrameLayout.</p>
+     *
+     * @param context
+     */
     public TurbolinksView(Context context) {
         super(context);
     }
 
+    /**
+     * <p>Constructor to match FrameLayout.</p>
+     *
+     * @param context
+     * @param attrs
+     */
     public TurbolinksView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
+    /**
+     * <p>Constructor to match FrameLayout.</p>
+     *
+     * @param context
+     * @param attrs
+     * @param defStyleAttr
+     */
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
+    /**
+     * <p>Constructor to match FrameLayout.</p>
+     *
+     * @param context
+     * @param attrs
+     * @param defStyleAttr
+     * @param defStyleRes
+     */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
@@ -39,6 +65,16 @@ public class TurbolinksView extends FrameLayout {
     // Package public
     // ---------------------------------------------------
 
+    /**
+     * <p>Detaches/attaches a progress view on top of the TurbolinksView to indicate the page is
+     * loading. Progress bar is set to a specified delay before displaying -- a very short delay
+     * (like 500 ms) can improve perceived loading time to the user.</p>
+     *
+     * @param progressView The progressView to display on top of TurbolinksView.
+     * @param progressBar The progressBar to display in the view.
+     * @param delay The delay before showing the progressBar in the view. The default progress view
+     *              is 500 ms.
+     */
     void showProgressView(final View progressView, final View progressBar, int delay) {
         removeProgressView();
 
@@ -57,10 +93,19 @@ public class TurbolinksView extends FrameLayout {
         }, delay);
     }
 
+    /**
+     * <p>Removes the progressView from the TurbolinksView. Ensures no exceptions are thrown where
+     * the progressView is already attached to another view.</p>
+     */
     void removeProgressView() {
         removeView(progressView);
     }
 
+    /**
+     * <p>Attach the shared webView to the TurbolinksView.</p>
+     *
+     * @param webView The shared webView.
+     */
     void attachWebView(WebView webView) {
         ViewGroup parent = (ViewGroup) webView.getParent();
         if (parent != null) {

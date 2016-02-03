@@ -70,6 +70,7 @@ public class Turbolinks {
     /**
      * Private constructor called by {@link #initialize(Context)} to return a new Turbolinks instance
      * that can be used as the singleton throughout the app's in-memory session.
+     *
      * @param context A standard Android context.
      */
     private Turbolinks(final Context context) {
@@ -97,16 +98,19 @@ public class Turbolinks {
             }
 
             /**
-             * Turbolinks will not call adapter.visitProposedToLocationWithAction in some cases, like target=_blank
-             or when the domain doesn't match. We still route those here. This is only called when links within a
-             webView are clicked and not during loadUrl. So this is safely ignored for the first cold boot.
-             http://stackoverflow.com/a/6739042/3280911
+             * Turbolinks will not call adapter.visitProposedToLocationWithAction in some cases,
+             * like target=_blank or when the domain doesn't match. We still route those here. This
+             * is only called when links within a webView are clicked and not during loadUrl. So
+             * this is safely ignored for the first cold boot.
+             * http://stackoverflow.com/a/6739042/3280911
              */
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String location) {
-                // Prevents firing twice in a row within a few milliseconds of each other, which happens sometimes. Great job webview!
-                // So we check for a slight delay between requests, which is plenty of time to allow for a user to click
-                // the same link again.
+                /**
+                 * Prevents firing twice in a row within a few milliseconds of each other, which
+                 * happens. So we check for a slight delay between requests, which is plenty of time
+                 * to allow for a user to click the same link again.
+                 */
                 long currentOverrideTime = new Date().getTime();
                 if ((currentOverrideTime - previousOverrideTime) > 500) {
                     previousOverrideTime = currentOverrideTime;
@@ -151,7 +155,7 @@ public class Turbolinks {
      * <p>You only need to initialize Turbolinks once, and you can check if it's already initialized
      * with {@link #isInitialized()}.</p>
      *
-     * @param context
+     * @param context An activity context.
      */
     public static void initialize(Context context) {
         if (singleton != null) {
@@ -174,11 +178,12 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * <p><b>REQUIRED</b> Turbolinks requires an Activity context to be provided for clarity -- in other words, you cannot
-     * use an ApplicationContext with Turbolinks.</p>
+     * <p><b>REQUIRED</b> Turbolinks requires an Activity context to be provided for clarity --
+     * in other words, you cannot use an ApplicationContext with Turbolinks.</p>
      *
-     * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures there is
-     * a one-to-one relationship maintained between internal activity IDs and visit IDs.</p>
+     * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures
+     * there is a one-to-one relationship maintained between internal activity IDs and visit IDs.</p>
+     *
      * @param activity An Android Activity, one per visit.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
@@ -194,8 +199,9 @@ public class Turbolinks {
     }
 
     /**
-     * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required to that callbacks during the Turbolinks
-     * event lifecycle can be passed back to your app.</p>
+     * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required to that callbacks
+     * during the Turbolinks event lifecycle can be passed back to your app.</p>
+     *
      * @param turbolinksAdapter Any class that ipmlements {@link TurbolinksAdapter}.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
@@ -205,9 +211,10 @@ public class Turbolinks {
     }
 
     /**
-     * <p><b>REQUIRED</b> A {@link TurbolinksView} object that's been inflated in a custom layout is required so that
-     * library can manage various view-related tasks: attaching/detaching the internal web view,
-     * showing/hiding a progress loading view, etc.</p>
+     * <p><b>REQUIRED</b> A {@link TurbolinksView} object that's been inflated in a custom layout is
+     * required so that library can manage various view-related tasks: attaching/detaching the
+     * internal webView, showing/hiding a progress loading view, etc.</p>
+     *
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
@@ -219,9 +226,10 @@ public class Turbolinks {
     }
 
     /**
-     * <p><b>REQUIRED</b> The call that executes a Turbolinks visit. Must be called at the end of the chain.
-     * All required parameters will first be validated before firing -- IllegalArgumentException will
-     * be thrown if they aren't all provided.</p>
+     * <p><b>REQUIRED</b> The call that executes a Turbolinks visit. Must be called at the end of
+     * the chain. All required parameters will first be validated before firing --
+     * IllegalArgumentException will be thrown if they aren't all provided.</p>
+     *
      * @param location The URL to visit.
      */
     public void visit(String location) {
@@ -239,10 +247,13 @@ public class Turbolinks {
             singleton.webView.loadUrl(location);
         }
 
-        // if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is typically a slow connection load.
-        // This allows the previous cold boot to finish (inject TL). No matter what, if new requests are sent to Turbolinks via
-        // Turbolinks.location, we'll always have the last desired location. And when setTurbolinksIsReady(true) is called,
-        // we open that last location.
+        /**
+         * if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is
+         * typically a slow connection load. This allows the previous cold boot to finish (inject TL).
+         * No matter what, if new requests are sent to Turbolinks via Turbolinks.location, we'll
+         * always have the last desired location. And when setTurbolinksIsReady(true) is called,
+         * we open that last location.
+         */
     }
 
     // ---------------------------------------------------
@@ -250,10 +261,11 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * <p><b>OPTIONAL</b> This will override the default progress view/progress bar that's provided
+     * <p><b>Optional</b> This will override the default progress view/progress bar that's provided
      * out of the box. This allows you to customize how you want the progress view to look while
      * pages are loading.</p>
-     * @param progressView A custom progressView object.
+     *
+     * @param progressView     A custom progressView object.
      * @param progressBarResId The resource ID of a progressBar object inside the progressView.
      * @param progressBarDelay The delay, in milliseconds, before the progress bar should be displayed
      *                         inside the progress view (default is 500 ms).
@@ -272,12 +284,13 @@ public class Turbolinks {
     }
 
     /**
-     * <p><b>OPTIONAL</b> By default Turbolinks will "advance" to the next page and scroll position
-     * will not be restored. Optionally calling this method allows you to set the behavior on a per-visit
-     * basis.</p>
+     * <p><b>Optional</b> By default Turbolinks will "advance" to the next page and scroll position
+     * will not be restored. Optionally calling this method allows you to set the behavior on a
+     * per-visitbasis.</p>
      *
      * <p>NOTE: The cache behavior is maintained between requests, so if you set this manually, you
      * should set it for every visit call.</p>
+     *
      * @param restoreWithCachedSnapshot If true, will restore scroll position. If false, will not restore
      *                                  scroll position.
      * @return The Turbolinks singleton, to continue the chained calls.
@@ -292,12 +305,14 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * <p>Called by Turbolinks when a new visit is initiated from a web view link.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit is initiated from a
+     * webView link.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param location URL to be visited.
-     * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
+     * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
@@ -306,11 +321,12 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called by Turbolinks when a new visit has just started.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit has just started.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
-     * @param visitIdentifier A unique identifier for the visit.
+     *
+     * @param visitIdentifier        A unique identifier for the visit.
      * @param visitHasCachedSnapshot Whether the visit has a cached snapshot available.
      */
     @SuppressWarnings("unused")
@@ -324,10 +340,12 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called by Turbolinks when the HTTP request has been completed.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has been
+     * completed.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param visitIdentifier A unique identifier for the visit.
      */
     @SuppressWarnings("unused")
@@ -339,12 +357,13 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called by Turbolinks when the HTTP request has failed.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has failed.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param visitIdentifier A unique identifier for the visit.
-     * @param statusCode The HTTP status code that caused the failure.
+     * @param statusCode      The HTTP status code that caused the failure.
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
@@ -360,10 +379,12 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called by Turbolinks once the page has been fully rendered in the web view.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks once the page has been fully rendered
+     * in the webView.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param visitIdentifier A unique identifier for the visit.
      */
     @SuppressWarnings("unused")
@@ -374,13 +395,15 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called by Turbolinks when the visit is fully completed -- request successful and page rendered.</p>
+     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the visit is fully completed --
+     * request successful and page rendered.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
      *
-     * @param visitIdentifier A unique identifier for the visit.
-     * @param restorationIdentifier A unique identifier for restoring the page and scroll position from cache.
+     * @param visitIdentifier       A unique identifier for the visit.
+     * @param restorationIdentifier A unique identifier for restoring the page and scroll position
+     *                              from cache.
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
@@ -398,8 +421,8 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Called when Turbolinks detects that the page being visited has been invalidated, typically
-     * by new resources in the the page HEAD.</p>
+     * <p><b>JavascriptInterface only</b> Called when Turbolinks detects that the page being visited
+     * has been invalidated, typically by new resources in the the page HEAD.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
@@ -425,10 +448,11 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * <p>Hides the progress view when the page is fully rendered.</p>
+     * <p><b>JavascriptInterface only</b> Hides the progress view when the page is fully rendered.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param visitIdentifier A unique identifier for the visit.
      */
     @SuppressWarnings("unused")
@@ -437,8 +461,11 @@ public class Turbolinks {
         TurbolinksHelper.runOnMainThread(context, new Runnable() {
             @Override
             public void run() {
-                // pageInvalidated will cold boot, but another in-flight response from visitResponseLoaded could attempt
-                // to hide the progress view. Checking turbolinksIsReady ensures progress view isn't hidden too soon by the non cold boot.
+                /**
+                 * pageInvalidated will cold boot, but another in-flight response from
+                 * visitResponseLoaded could attempt to hide the progress view. Checking
+                 * turbolinksIsReady ensures progress view isn't hidden too soon by the non cold boot.
+                 */
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
                     singleton.turbolinksView.removeProgressView();
@@ -455,10 +482,12 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Sets internal flags that indicate whether Turbolinks in the web view is ready for use.</p>
+     * <p><b>JavascriptInterface only</b> Sets internal flags that indicate whether Turbolinks in
+     * the webView is ready for use.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
+     *
      * @param turbolinksIsReady
      */
     @SuppressWarnings("unused")
@@ -484,7 +513,8 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Handles the error condition when reaching a page without Turbolinks.</p>
+     * <p><b>JavascriptInterface only</b> Handles the error condition when reaching a page without
+     * Turbolinks.</p>
      *
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
@@ -508,9 +538,10 @@ public class Turbolinks {
 
     /**
      * <p>Provides the ability to add an arbitrary number of custom Javascript Interfaces to the built-in
-     * Turbolinks web view.</p>
+     * Turbolinks webView.</p>
+     *
      * @param object The object with annotated JavascriptInterface methods
-     * @param name The unique name for the interface (must not use the reserved name "TurbolinksNative")
+     * @param name   The unique name for the interface (must not use the reserved name "TurbolinksNative")
      */
     @SuppressLint("JavascriptInterface")
     public static void addJavascriptInterface(Object object, String name) {
@@ -528,6 +559,7 @@ public class Turbolinks {
 
     /**
      * <p>Returns the activity attached to the Turbolinks call.</p>
+     *
      * @return The attached activity, or null if Turbolinks is not initialized.
      */
     public static Activity getActivity() {
@@ -536,6 +568,7 @@ public class Turbolinks {
 
     /**
      * <p>Returns the internal WebView used by Turbolinks.</p>
+     *
      * @return The WebView used by Turbolinks, or null if Turbolinks is not initialized.
      */
     public static WebView getWebView() {
@@ -544,6 +577,7 @@ public class Turbolinks {
 
     /**
      * <p>Whether or not the Turboolinks singleton is ready for use.</p>
+     *
      * @return True if singleton != null, otherwise false.
      */
     public static boolean isInitialized() {
@@ -570,16 +604,18 @@ public class Turbolinks {
     }
 
     /**
-     * <p>Runs a Javascript function with any number of arbitrary params in the Turbolinks web view.</p>
+     * <p>Runs a Javascript function with any number of arbitrary params in the Turbolinks webView.</p>
+     *
      * @param functionName The name of the function, without any parenthesis or params
-     * @param params A comma delimited list of params. Params will be automatically JSONified.
+     * @param params       A comma delimited list of params. Params will be automatically JSONified.
      */
     public static void runJavascript(final String functionName, final Object... params) {
         TurbolinksHelper.runJavascript(singleton.context, singleton.webView, functionName, params);
     }
 
     /**
-     * <p>Runs raw Javascript in web view. Simply wraps the loadUrl("javascript: methodName()") call.</p>
+     * <p>Runs raw Javascript in webView. Simply wraps the loadUrl("javascript: methodName()") call.</p>
+     *
      * @param rawJavascript
      */
     public static void runJavascriptRaw(String rawJavascript) {
@@ -588,6 +624,7 @@ public class Turbolinks {
 
     /**
      * <p>Tells the logger whether to allow logging in debug mode.</p>
+     *
      * @param enabled If true, debug logging is enabled.
      */
     public static void setDebugLoggingEnabled(boolean enabled) {
@@ -596,6 +633,7 @@ public class Turbolinks {
 
     /**
      * <p>Provides the status of whether Turbolinks is initialized and ready for use.</p>
+     *
      * @return True if Turbolinks is both initialized and ready for use.
      */
     public static boolean turbolinksIsReady() {
@@ -604,8 +642,9 @@ public class Turbolinks {
 
     /**
      * <p>A convenience method to fire a Turbolinks visit manually.</p>
+     *
      * @param location URL to visit.
-     * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
+     * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
     public static void visitLocationWithAction(String location, String action) {
         Turbolinks.runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, singleton.getRestorationIdentifierFromMap());
@@ -617,6 +656,7 @@ public class Turbolinks {
 
     /**
      * <p>Adds the restoration (cached scroll position) identifier to the local Hashmap.</p>
+     *
      * @param value Restoration ID provided by Turbolinks.
      */
     private void addRestorationIdentifierToMap(String value) {
@@ -627,6 +667,7 @@ public class Turbolinks {
 
     /**
      * <p>Gets the restoration ID for the current activity.</p>
+     *
      * @return Restoration ID for the current activity.
      */
     private String getRestorationIdentifierFromMap() {

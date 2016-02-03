@@ -27,6 +27,12 @@ class TurbolinksHelper {
     // Package public
     // ---------------------------------------------------
 
+    /**
+     * <p>Creates the shared webView used throughout the lifetime of the Turbolinks singleton.</p>
+     *
+     * @param context Any activity context.
+     * @return
+     */
     static WebView createWebView(Context context) {
         MutableContextWrapper contextWrapper = new MutableContextWrapper(context.getApplicationContext());
         WebView webView = new WebView(contextWrapper);
@@ -35,7 +41,13 @@ class TurbolinksHelper {
         return webView;
     }
 
-    // http://stackoverflow.com/questions/3286067/url-encoding-in-android/8962879#8962879
+    /**
+     * <p>Encodes URLs so they are properly escaped, specifically for Javascript calls. Liberally
+     * borrowed from: http://stackoverflow.com/questions/3286067/url-encoding-in-android/8962879#8962879</p>
+     *
+     * @param originalUrl Original URL string.
+     * @return Encoded, escaped URL string.
+     */
     static String encodeUrl(String originalUrl) {
         try {
             URL newUrl = new URL(originalUrl);
@@ -46,6 +58,14 @@ class TurbolinksHelper {
         }
     }
 
+    /**
+     * <p>Gets the base64-encoded string of a local asset file (typically a Javascript or HTML file)</p>
+     *
+     * @param context An activity context.
+     * @param filePath Local file path relative to the main/src directory.
+     * @return A base-64 encoded string of the file contents.
+     * @throws IOException Typically if a file cannot be found or read in.
+     */
     static String getContentFromAssetFile(Context context, String filePath) throws IOException {
         InputStream inputStream = context.getAssets().open(filePath);
         byte[] buffer = new byte[inputStream.available()];
@@ -54,6 +74,13 @@ class TurbolinksHelper {
         return Base64.encodeToString(buffer, Base64.NO_WRAP);
     }
 
+    /**
+     * <p>Injects Javascript into the singleton's webView.</p>
+     *
+     * @param singleton The Turbolinks singleton.
+     * @param context An activity context.
+     * @param webView The shared webView.
+     */
     static void injectTurbolinksBridge(final Turbolinks singleton, Context context, WebView webView) {
         try {
             String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js");
@@ -72,6 +99,15 @@ class TurbolinksHelper {
         }
     }
 
+    /**
+     * <p>JSONifies any arbitrary number of params and runs the the Javascript function in the
+     * webView.</p>
+     *
+     * @param context An activity context.
+     * @param webView The shared webView.
+     * @param functionName The Javascript function name only (no parenthesis or parameters).
+     * @param params A comma delimited list of parameter values.
+     */
     static void runJavascript(Context context, final WebView webView, String functionName, Object... params) {
         final String fullJs;
 
@@ -94,6 +130,14 @@ class TurbolinksHelper {
         });
     }
 
+    /**
+     * <p>>Runs raw Javascript that's passed in. You are responsible for encoding/escaping the
+     * function call.</p>
+     *
+     * @param context An activity context.
+     * @param webView The shared webView.
+     * @param javascript The raw Javascript to be executed, fully escaped/encoded in advance.
+     */
     static void runJavascriptRaw(Context context, final WebView webView, final String javascript) {
         runOnMainThread(context, new Runnable() {
             @Override
@@ -103,6 +147,12 @@ class TurbolinksHelper {
         });
     }
 
+    /**
+     * <p>Executes a given runnable on the main thread.</p>
+     *
+     * @param context An activity context.
+     * @param runnable A runnable to execute on the main thread.
+     */
     static void runOnMainThread(Context context, Runnable runnable) {
         Handler handler = new Handler(context.getMainLooper());
         handler.post(runnable);
@@ -112,6 +162,12 @@ class TurbolinksHelper {
     // Private
     // ---------------------------------------------------
 
+    /**
+     * <p>Configures basic settings of the webView (Javascript enabled, DOM storage enabled,
+     * database enabled).</p>
+     *
+     * @param webView The shared webView.
+     */
     @SuppressLint("SetJavaScriptEnabled")
     private static void configureWebViewDefaults(WebView webView) {
         WebSettings settings = webView.getSettings();
