@@ -714,7 +714,7 @@ public class Turbolinks {
 
     /**
      * <p>Ensures all required chained calls/parameters ({@link #initialize(Context)}, {@link #activity},
-     * {@link #adapter(TurbolinksAdapter)}, {@link #turbolinksView}, and location}) are
+     * {@link #adapter(Object)}, {@link #turbolinksView}, and location}) are
      * set before calling {@link #visit(String)}.</p>
      */
     private void validateRequiredParams() {

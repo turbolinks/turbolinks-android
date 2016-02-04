@@ -1,5 +1,6 @@
 package com.basecamp.turbolinks;
 
+import android.app.Activity;
 import android.widget.FrameLayout;
 
 import org.junit.Before;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = TestBuildConfig.class)
 public class TurbolinksTest extends BaseTest {
-    @Mock TurbolinksTestActivity activity;
+    @Mock Activity activity;
     @Mock TurbolinksAdapter adapter;
     @Mock TurbolinksView view;
     @Mock FrameLayout progressView;
@@ -160,6 +161,53 @@ public class TurbolinksTest extends BaseTest {
         assertThat(Turbolinks.singleton.restorationIdentifierMap.size()).isEqualTo(1);
     }
 
+//    TODO: Robolectric having trouble with local resources directory
+//    @Test
+//    public void pageInvalidatedCallsAdapter() {
+//        Turbolinks.initialize(context);
+//        Turbolinks.activity(activity)
+//            .adapter(adapter)
+//            .view(view)
+//            .visit(LOCATION);
+//        Turbolinks.singleton.pageInvalidated();
+//
+//        verify(adapter).pageInvalidated();
+//    }
+//
+//    @Test
+//    public void pageInvalidatedResetsToColdBoot() {
+//        Turbolinks.initialize(context);
+//        Turbolinks.activity(activity)
+//            .adapter(adapter)
+//            .view(view)
+//            .visit(LOCATION);
+//        Turbolinks.singleton.turbolinksBridgeInjected = true;
+//        Turbolinks.singleton.turbolinksIsReady = true;
+//        Turbolinks.singleton.coldBootInProgress = false;
+//
+//        Turbolinks.singleton.pageInvalidated();
+//
+//        assertThat(Turbolinks.singleton.turbolinksBridgeInjected).isTrue();
+//        assertThat(Turbolinks.singleton.turbolinksIsReady).isTrue();
+//        assertThat(Turbolinks.singleton.coldBootInProgress).isFalse();
+//    }
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void hideProgressViewNullsView() {
+        Turbolinks.initialize(context);
+        Turbolinks.singleton.turbolinksIsReady = true;
+        Turbolinks.singleton.turbolinksView = view;
+        Turbolinks.singleton.progressView = new FrameLayout(context);
+        Turbolinks.singleton.currentVisitIdentifier = VISIT_IDENTIFIER;
+        Turbolinks.singleton.hideProgressView(VISIT_IDENTIFIER);
+
+        assertThat(Turbolinks.singleton.progressView).isNull();
+    }
+
 
     // -----------------------------------------------------------------------
     // Public
@@ -172,11 +220,57 @@ public class TurbolinksTest extends BaseTest {
     }
 
     @Test
-    public void addJavascriptInterface() {
+    public void addJavascriptInterfaceAddsToMap() {
         Turbolinks.initialize(context);
 
         assertThat(Turbolinks.singleton.javascriptInterfaces.size()).isEqualTo(0);
         Turbolinks.addJavascriptInterface(new Object(), "TestJavascriptInterface");
         assertThat(Turbolinks.singleton.javascriptInterfaces.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void activityIsNullIfNotInitialized() {
+        assertThat(Turbolinks.getActivity()).isNull();
+    }
+
+    @Test
+    public void webViewIsNullIfNotInitialized() {
+        assertThat(Turbolinks.getActivity()).isNull();
+    }
+
+    @Test
+    public void isInitialized() {
+        Turbolinks.initialize(context);
+        assertThat(Turbolinks.isInitialized()).isTrue();
+    }
+
+    @Test
+    public void resetNullsSingleton() {
+        Turbolinks.initialize(context);
+        Turbolinks.reset();
+        assertThat(Turbolinks.isInitialized()).isFalse();
+    }
+
+    @Test
+    public void resetToColdBoot() {
+        Turbolinks.initialize(context);
+        Turbolinks.activity(activity)
+            .adapter(adapter);
+        Turbolinks.singleton.turbolinksBridgeInjected = true;
+        Turbolinks.singleton.turbolinksIsReady = true;
+        Turbolinks.singleton.coldBootInProgress = false;
+        Turbolinks.resetToColdBoot();
+
+        assertThat(Turbolinks.singleton.turbolinksBridgeInjected).isFalse();
+        assertThat(Turbolinks.singleton.turbolinksIsReady).isFalse();
+        assertThat(Turbolinks.singleton.coldBootInProgress).isFalse();
+    }
+
+    @Test
+    public void turbolinksIsReady() {
+        Turbolinks.initialize(context);
+        Turbolinks.singleton.turbolinksIsReady = true;
+
+        assertThat(Turbolinks.turbolinksIsReady()).isTrue();
     }
 }
