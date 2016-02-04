@@ -1,11 +1,16 @@
-<manifest package="com.basecamp.turbolinks"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    package="com.basecamp.turbolinks"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
-        android:supportsRtl="true"
-        >
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".TurbolinksTestActivity"
+            android:label="Test Activity">
+        </activity>
 
     </application>
 

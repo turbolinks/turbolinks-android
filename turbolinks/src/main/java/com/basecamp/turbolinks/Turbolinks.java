@@ -202,12 +202,16 @@ public class Turbolinks {
      * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required to that callbacks
      * during the Turbolinks event lifecycle can be passed back to your app.</p>
      *
-     * @param turbolinksAdapter Any class that ipmlements {@link TurbolinksAdapter}.
+     * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks adapter(TurbolinksAdapter turbolinksAdapter) {
-        singleton.turbolinksAdapter = turbolinksAdapter;
-        return singleton;
+    public Turbolinks adapter(Object turbolinksAdapter) {
+        if (turbolinksAdapter instanceof TurbolinksAdapter) {
+            singleton.turbolinksAdapter = (TurbolinksAdapter) turbolinksAdapter;
+            return singleton;
+        } else {
+            throw new IllegalArgumentException("Class passed as adapter does not implement TurbolinksAdapter interface.");
+        }
     }
 
     /**
@@ -721,7 +725,7 @@ public class Turbolinks {
         }
 
         if (singleton.activity == null) {
-            throw new IllegalStateException("Turbolinks.activity(activity) must be called.");
+            throw new IllegalArgumentException("Turbolinks.activity(activity) must be called.");
         }
 
         if (singleton.turbolinksAdapter == null) {
