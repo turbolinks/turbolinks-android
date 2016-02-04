@@ -1,9 +1,7 @@
-package com.basecamp.turbolinks.test;
+package com.basecamp.turbolinks;
 
 import android.content.Context;
 import android.os.Build;
-
-import com.basecamp.turbolinks.TurbolinksTestActivity;
 
 import org.junit.Before;
 import org.junit.Test;

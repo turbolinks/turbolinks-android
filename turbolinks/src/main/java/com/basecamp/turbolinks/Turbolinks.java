@@ -25,43 +25,38 @@ import java.util.HashMap;
 public class Turbolinks {
 
     // ---------------------------------------------------
-    // Package public vars
+    // Package public vars (allows for greater flexibility and access for testing)
     // ---------------------------------------------------
     boolean turbolinksBridgeInjected; // Script injected into DOM
 
     static volatile Turbolinks singleton = null;
 
+    boolean coldBootInProgress;
+    boolean restoreWithCachedSnapshot;
+    boolean turbolinksIsReady; // Script finished and TL fully instantiated
+    int progressBarDelay;
+    long previousOverrideTime;
+    Activity activity;
+    HashMap<String, Object> javascriptInterfaces;
+    HashMap<String, String> restorationIdentifierMap;
+    String location;
+    String currentVisitIdentifier;
+    TurbolinksAdapter turbolinksAdapter;
+    TurbolinksView turbolinksView;
+    View progressView;
+    View progressBar;
+
     // ---------------------------------------------------
     // Final vars
     // ---------------------------------------------------
 
-    private static final String ACTION_ADVANCE = "advance";
-    private static final String ACTION_RESTORE = "restore";
-    private static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
-    private static final int PROGRESS_BAR_DELAY = 500;
+    static final String ACTION_ADVANCE = "advance";
+    static final String ACTION_RESTORE = "restore";
+    static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
+    static final int PROGRESS_BAR_DELAY = 500;
 
-
-    private final Context context;
-    private final WebView webView;
-
-    // ---------------------------------------------------
-    // Private vars
-    // ---------------------------------------------------
-
-    private boolean coldBootInProgress;
-    private boolean restoreWithCachedSnapshot;
-    private boolean turbolinksIsReady; // Script finished and TL fully instantiated
-    private int progressBarDelay;
-    private long previousOverrideTime;
-    private Activity activity;
-    private HashMap<String, Object> javascriptInterfaces;
-    private HashMap<String, String> restorationIdentifierMap;
-    private String location;
-    private String currentVisitIdentifier;
-    private TurbolinksAdapter turbolinksAdapter;
-    private TurbolinksView turbolinksView;
-    private View progressView;
-    private View progressBar;
+    final Context context;
+    final WebView webView;
 
     // ---------------------------------------------------
     // Constructor
@@ -178,7 +173,10 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * <p><b>REQUIRED</b> Turbolinks requires an Activity context to be provided for clarity --
+     * <p><b>REQUIRED</b> All chained calls to Turbolinks must start here with
+     * Turbolinks.activity(activity).</p>
+     *
+     * <p>>Turbolinks requires an Activity context to be provided for clarity --
      * in other words, you cannot use an ApplicationContext with Turbolinks.</p>
      *
      * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures
@@ -312,8 +310,8 @@ public class Turbolinks {
      * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit is initiated from a
      * webView link.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param location URL to be visited.
      * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
@@ -327,8 +325,8 @@ public class Turbolinks {
     /**
      * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit has just started.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param visitIdentifier        A unique identifier for the visit.
      * @param visitHasCachedSnapshot Whether the visit has a cached snapshot available.
@@ -347,8 +345,8 @@ public class Turbolinks {
      * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has been
      * completed.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param visitIdentifier A unique identifier for the visit.
      */
@@ -363,8 +361,8 @@ public class Turbolinks {
     /**
      * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has failed.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param visitIdentifier A unique identifier for the visit.
      * @param statusCode      The HTTP status code that caused the failure.
@@ -386,8 +384,8 @@ public class Turbolinks {
      * <p><b>JavascriptInterface only</b> Called by Turbolinks once the page has been fully rendered
      * in the webView.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param visitIdentifier A unique identifier for the visit.
      */
@@ -402,8 +400,8 @@ public class Turbolinks {
      * <p><b>JavascriptInterface only</b> Called by Turbolinks when the visit is fully completed --
      * request successful and page rendered.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      *
      * @param visitIdentifier       A unique identifier for the visit.
      * @param restorationIdentifier A unique identifier for restoring the page and scroll position
@@ -428,8 +426,8 @@ public class Turbolinks {
      * <p><b>JavascriptInterface only</b> Called when Turbolinks detects that the page being visited
      * has been invalidated, typically by new resources in the the page HEAD.</p>
      *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
+     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
+     * never call this directly as it could lead to unintended behavior.</p>
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
@@ -550,7 +548,7 @@ public class Turbolinks {
     @SuppressLint("JavascriptInterface")
     public static void addJavascriptInterface(Object object, String name) {
         if (TextUtils.equals(name, JAVASCRIPT_INTERFACE_NAME)) {
-            throw new IllegalStateException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
+            throw new IllegalArgumentException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
         }
 
         if (singleton.javascriptInterfaces.get(name) == null) {
@@ -725,15 +723,15 @@ public class Turbolinks {
         }
 
         if (singleton.activity == null) {
-            throw new IllegalArgumentException("Turbolinks.activity(activity) must be called.");
+            throw new IllegalArgumentException("Turbolinks.activity(activity) must be called with a non-null object.");
         }
 
         if (singleton.turbolinksAdapter == null) {
-            throw new IllegalArgumentException("Turbolinks.adapter(turbolinksAdapter) must be called.");
+            throw new IllegalArgumentException("Turbolinks.adapter(turbolinksAdapter) must be called with a non-null object.");
         }
 
         if (singleton.turbolinksView == null) {
-            throw new IllegalArgumentException("Turbolinks.view(turbolinksView) must be called.");
+            throw new IllegalArgumentException("Turbolinks.view(turbolinksView) must be called with a non-null object.");
         }
 
         if (TextUtils.isEmpty(singleton.location)) {
