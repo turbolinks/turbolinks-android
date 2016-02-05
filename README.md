@@ -1,6 +1,6 @@
 # Turbolinks Android
 
-Turbolinks Android is a native adapter for any [Turbolinks 5](https://github.com/turbolinks/turbolinks#readme) enabled site. It's built entirely using standard Android tools and conventions.
+Turbolinks Android is a native adapter for any [Turbolinks 5](https://github.com/turbolinks/turbolinks#readme) enabled web application. It's built entirely using standard Android tools and conventions.
 
 This library has been in use and tested in the wild since November 2015 in the all-new [Basecamp 3 for Android](https://play.google.com/store/apps/details?id=com.basecamp.bc3).
 
@@ -13,7 +13,7 @@ Our goal for this library was that it'd be easy on our fellow programmers:
 ## Installation (One Step)
 Add the dependency from jcenter to your app's (not project) `build.gradle` file.
 
-```
+```groovy
 repositories {
     jcenter()
 }
@@ -31,18 +31,18 @@ We recommend using Turbolinks from an activity or an extension of your activity 
 
 This library hasn't been tested with Android Fragments (we don't use them). Using this library with Fragments might produce unintended results.
 
-### 1. Add TurbolinksView to a layout
+### 1. Add TurbolinksView to a Layout
 
 In your activity's layout, insert the `TurbolinksView` custom view.
 
-`TurbolinksView` extends `FrameLayout`, so it will span the entirety of the container you give it. It also has all the properties of a `FrameLayout` availalbe to you.
+`TurbolinksView` extends `FrameLayout`, so it has all the properties of a `FrameLayout` available to you.
 
-```
+```xml
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    
+
     <com.basecamp.turbolinks.TurbolinksView
         android:id="@+id/turbolinks_view"
         android:layout_width="match_parent"
@@ -53,23 +53,23 @@ In your activity's layout, insert the `TurbolinksView` custom view.
 
 ### 2. Implement the TurbolinksAdapter Interface
 
-Tell your activity to extend the `TurbolinksAdapter` interface. You'll be required to implement a handful of methods. 
+Tell your activity to implement the `TurbolinksAdapter` interface. You'll be required to implement a handful of methods.
 
-Don't worry too much about these methods yet -- they are simply callbacks from Turbolinks to your application. It can be useful to intercept these events and handle them however you want. 
+Don't worry too much about these methods yet -- they are simply callbacks from Turbolinks to your application. It can be useful to intercept these events and handle them however you want.
 
 There's more detail in what each of these callbacks is in the [Javadoc](http://basecamp.github.io/turbolinks-android/javadoc/), and the demo app provides a good example of what each callback might be used for.
 
 For now you can just implement them as empty methods, and come back to them for more advanced scenarios.
 
-### 3. Initialize Turbolinks and Visit Location
+### 3. Initialize Turbolinks and Visit a Location
 
 Assuming you are calling Turbolinks from an activity and you've implemented the `TurbolinksAdapter` interface in the same activity, here's how you tell Turbolinks to visit a location.
 
-```
+```java
 @Override
 protected void onCreate(Bundle savedInstanceState) {
     // Standard activity boilerplate here...
-    
+
     // Assumes an instance variable is already defined
     turbolinksView = (TurbolinksView) findViewById(R.id.turbolinks_view);
 
@@ -84,7 +84,7 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-**Congratulations, you're using Turbolinks on Android!**
+🎉**Congratulations, you're using Turbolinks on Android!** 👏
 
 
 ## Advanced Options
