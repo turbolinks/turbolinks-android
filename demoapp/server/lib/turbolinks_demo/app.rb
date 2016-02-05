@@ -18,6 +18,12 @@ module TurbolinksDemo
       erb :two, layout: :layout
     end
 
+    get '/slow' do
+      sleep 2
+      @title = 'Slow'
+      erb :slow, layout: :layout
+    end
+
     get '/error' do
       @title = 'Error'
       erb :error, layout: :layout

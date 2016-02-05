@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.MutableContextWrapper;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -251,6 +253,9 @@ public class Turbolinks {
             singleton.webView.loadUrl(location);
         }
 
+        // Reset so that cached snapshot is not the default for the next visit
+        singleton.restoreWithCachedSnapshot = false;
+
         /**
          * if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is
          * typically a slow connection load. This allows the previous cold boot to finish (inject TL).
@@ -290,10 +295,7 @@ public class Turbolinks {
     /**
      * <p><b>Optional</b> By default Turbolinks will "advance" to the next page and scroll position
      * will not be restored. Optionally calling this method allows you to set the behavior on a
-     * per-visitbasis.</p>
-     *
-     * <p>NOTE: The cache behavior is maintained between requests, so if you set this manually, you
-     * should set it for every visit call.</p>
+     * per-visitbasis. This will be reset to "false" after each visit.</p>
      *
      * @param restoreWithCachedSnapshot If true, will restore scroll position. If false, will not restore
      *                                  scroll position.
@@ -699,9 +701,14 @@ public class Turbolinks {
         // No custom progress view provided, use default
         if (singleton.progressView == null) {
             singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
+
+            TurbolinksLog.d("Turbolinks background: " + turbolinksView.getBackground());
             singleton.progressView.setBackground(turbolinksView.getBackground());
             singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
             singleton.progressBarDelay = PROGRESS_BAR_DELAY;
+
+            Drawable background = turbolinksView.getBackground() != null ? turbolinksView.getBackground() : new ColorDrawable(context.getResources().getColor(android.R.color.white));
+            singleton.progressView.setBackground(background);
         }
 
         // A progress view can be reused, so ensure it's detached from its previous parent first

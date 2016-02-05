@@ -9,31 +9,43 @@ import com.basecamp.turbolinks.TurbolinksAdapter;
 import com.basecamp.turbolinks.TurbolinksView;
 
 public class MainActivity extends AppCompatActivity implements TurbolinksAdapter {
+    // Change the BASE_URL to an address that your VM or device can hit. We recommend using
+    // http://pow.cx/ (to rack the Sinatra webapp) and http://xip.io/ (wildcard DNS) to make life
+    // easier in accessing the demo webapp from your device.
     private static final String BASE_URL = "http://server.10.0.1.100.xip.io/";
     private static final String INTENT_URL = "intentUrl";
 
     private String location;
     private TurbolinksView turbolinksView;
 
+    // -----------------------------------------------------------------------
+    // Activity overrides
+    // -----------------------------------------------------------------------
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Find the custom TurbolinksView object in your layout
         turbolinksView = (TurbolinksView) findViewById(R.id.turbolinks_view);
 
+        // Ensure Turbolinks is initialized before you do anything
         if (!Turbolinks.isInitialized()) {
             Turbolinks.initialize(this);
         }
 
+        // For this demo app, we force debug logging on. You will only want to do
+        // this for debug builds of your app (it is off by default)
         Turbolinks.setDebugLoggingEnabled(true);
 
+        // For this example we set a default location, unless one is passed in through an intent
         location = getIntent().getStringExtra(INTENT_URL) != null ? getIntent().getStringExtra(INTENT_URL) : BASE_URL;
 
+        // Execute the visit
         Turbolinks.activity(this)
             .adapter(this)
             .view(turbolinksView)
-            .restoreWithCachedSnapshot(false)
             .visit(location);
     }
 
@@ -41,12 +53,18 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
     protected void onRestart() {
         super.onRestart();
 
+        // Since the webView is shared between activities, we need to tell Turbolinks
+        // to load the location from the previous activity upon restarting
         Turbolinks.activity(this)
             .adapter(this)
             .restoreWithCachedSnapshot(true)
             .view(turbolinksView)
             .visit(location);
     }
+
+    // -----------------------------------------------------------------------
+    // TurbolinksAdapter interface
+    // -----------------------------------------------------------------------
 
     @Override
     public void onPageFinished() {
@@ -55,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
 
     @Override
     public void onReceivedError(int errorCode) {
-
+        handleError(errorCode);
     }
 
     @Override
@@ -65,11 +83,7 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
 
     @Override
     public void requestFailedWithStatusCode(int statusCode) {
-        Turbolinks.activity(this)
-            .adapter(this)
-            .restoreWithCachedSnapshot(false)
-            .view(turbolinksView)
-            .visit(BASE_URL + "/error");
+        handleError(statusCode);
     }
 
     @Override
@@ -77,11 +91,28 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
 
     }
 
+    // The starting point for any href clicked inside a Turbolinks enabled site. In a simple case
+    // you can just open another activity, or in more complex cases, this would be a good spot for
+    // routing logic to take you to the right place within your app.
     @Override
     public void visitProposedToLocationWithAction(String location, String action) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(INTENT_URL, location);
 
         this.startActivity(intent);
+    }
+
+    // -----------------------------------------------------------------------
+    // Private
+    // -----------------------------------------------------------------------
+
+    // Simply forwards to an error page, but you could alternatively show your own native screen
+    // or do whatever other kind of error handling you want.
+    private void handleError(int code) {
+        Turbolinks.activity(this)
+            .adapter(this)
+            .restoreWithCachedSnapshot(false)
+            .view(turbolinksView)
+            .visit(BASE_URL + "/error");
     }
 }
