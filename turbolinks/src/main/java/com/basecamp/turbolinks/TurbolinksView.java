@@ -76,6 +76,8 @@ public class TurbolinksView extends FrameLayout {
      *              is 500 ms.
      */
     void showProgressView(final View progressView, final View progressBar, int delay) {
+        TurbolinksLog.d("showProgressView called");
+
         removeProgressView();
 
         this.progressView = progressView;

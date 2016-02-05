@@ -235,6 +235,8 @@ public class Turbolinks {
      * @param location The URL to visit.
      */
     public void visit(String location) {
+        TurbolinksLog.d("visit called");
+
         singleton.location = location;
 
         validateRequiredParams();
@@ -319,6 +321,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitProposedToLocationWithAction(String location, String action) {
+        TurbolinksLog.d("visitProposedToLocationWithAction called");
+        
         singleton.turbolinksAdapter.visitProposedToLocationWithAction(location, action);
     }
 
@@ -334,6 +338,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
+        TurbolinksLog.d("visitStarted called");
+
         singleton.currentVisitIdentifier = visitIdentifier;
 
         runJavascript("webView.changeHistoryForVisitWithIdentifier", visitIdentifier);
@@ -353,6 +359,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRequestCompleted(String visitIdentifier) {
+        TurbolinksLog.d("visitRequestCompleted called");
+
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
             runJavascript("webView.loadResponseForVisitWithIdentifier", visitIdentifier);
         }
@@ -370,6 +378,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
+        TurbolinksLog.d("visitRequestFailedWithStatusCode called");
+
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
@@ -392,7 +402,7 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitRendered(String visitIdentifier) {
-        TurbolinksLog.d("visitRendered hiding progress view for identifier: " + visitIdentifier);
+        TurbolinksLog.d("visitRendered called, hiding progress view for identifier: " + visitIdentifier);
         hideProgressView(visitIdentifier);
     }
 
@@ -410,6 +420,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void visitCompleted(String visitIdentifier, String restorationIdentifier) {
+        TurbolinksLog.d("visitCompleted called");
+
         addRestorationIdentifierToMap(restorationIdentifier);
 
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
@@ -432,7 +444,8 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void pageInvalidated() {
-        TurbolinksLog.d("Page invalidated");
+        TurbolinksLog.d("pageInvalidated called");
+
         resetToColdBoot();
 
         TurbolinksHelper.runOnMainThread(context, new Runnable() {
