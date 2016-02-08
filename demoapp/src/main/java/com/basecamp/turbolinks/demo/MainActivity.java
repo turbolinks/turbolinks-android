@@ -9,10 +9,8 @@ import com.basecamp.turbolinks.TurbolinksAdapter;
 import com.basecamp.turbolinks.TurbolinksView;
 
 public class MainActivity extends AppCompatActivity implements TurbolinksAdapter {
-    // Change the BASE_URL to an address that your VM or device can hit. We recommend using
-    // http://pow.cx/ (to rack the Sinatra webapp) and http://xip.io/ (wildcard DNS) to make life
-    // easier in accessing the demo webapp from your device.
-    private static final String BASE_URL = "http://server.10.0.1.100.xip.io/";
+    // Change the BASE_URL to an address that your VM or device can hit.
+    private static final String BASE_URL = "http://10.0.1.100:9292";
     private static final String INTENT_URL = "intentUrl";
 
     private String location;

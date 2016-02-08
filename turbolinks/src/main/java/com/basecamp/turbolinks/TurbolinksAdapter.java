@@ -10,16 +10,12 @@ package com.basecamp.turbolinks;
 public interface TurbolinksAdapter {
     /**
      * <p>Called after the Turbolinks Javascript bridge has been injected into the webView, during the
-     * Android WebViewClient's standard
-     * <a href="http://developer.android.com/reference/android/webkit/WebViewClient.html#onPageFinished(android.webkit.WebView, java.lang.String)">onPageFinished</a>
-     * callback.</p>
+     * Android WebViewClient's standard onPageFinished callback.
      */
     void onPageFinished();
 
     /**
-     * <p>Called when the Android WebViewClient's
-     * <a href="http://developer.android.com/reference/android/webkit/WebViewClient.html#onReceivedError(android.webkit.WebView, int, java.lang.String, java.lang.String)">onReceivedError</a>
-     * standard callback is fired.</p>
+     * <p>Called when the Android WebViewClient's standard onReceivedError callback is fired.</p>
      *
      * @param errorCode Passed through error code returned by the Android WebViewClient.
      */

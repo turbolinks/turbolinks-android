@@ -178,7 +178,7 @@ public class Turbolinks {
      * <p><b>REQUIRED</b> All chained calls to Turbolinks must start here with
      * Turbolinks.activity(activity).</p>
      *
-     * <p>>Turbolinks requires an Activity context to be provided for clarity --
+     * <p>Turbolinks requires an Activity context to be provided for clarity --
      * in other words, you cannot use an ApplicationContext with Turbolinks.</p>
      *
      * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures
@@ -505,7 +505,8 @@ public class Turbolinks {
      * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
      * purposes, you should never call this directly.</p>
      *
-     * @param turbolinksIsReady
+     * @param turbolinksIsReady The Javascript bridge checks the current page for Turbolinks, and
+     *                          sends the results of that check here.
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
@@ -633,7 +634,7 @@ public class Turbolinks {
     /**
      * <p>Runs raw Javascript in webView. Simply wraps the loadUrl("javascript: methodName()") call.</p>
      *
-     * @param rawJavascript
+     * @param rawJavascript The full Javascript string that will be executed by the WebView.
      */
     public static void runJavascriptRaw(String rawJavascript) {
         TurbolinksHelper.runJavascriptRaw(singleton.context, singleton.webView, rawJavascript);

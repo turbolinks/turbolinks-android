@@ -21,7 +21,7 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context
+     * @param context Refer to FrameLayout.
      */
     public TurbolinksView(Context context) {
         super(context);
@@ -30,8 +30,8 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context
-     * @param attrs
+     * @param context Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -40,9 +40,9 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context
-     * @param attrs
-     * @param defStyleAttr
+     * @param context Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
+     * @param defStyleAttr Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -51,10 +51,10 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context
-     * @param attrs
-     * @param defStyleAttr
-     * @param defStyleRes
+     * @param context Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
+     * @param defStyleAttr Refer to FrameLayout.
+     * @param defStyleRes Refer to FrameLayout.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
