@@ -4,7 +4,6 @@ function TLWebView(controller) {
 
     var turbolinksIsReady = typeof Turbolinks !== "undefined" && Turbolinks !== null
     TurbolinksNative.setTurbolinksIsReady(turbolinksIsReady);
-    TurbolinksNative.setFirstRestorationIdentifier(this.controller.restorationIdentifier);
 }
 
 TLWebView.prototype = {

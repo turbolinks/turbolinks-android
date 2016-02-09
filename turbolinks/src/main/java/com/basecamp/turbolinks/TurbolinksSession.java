@@ -512,12 +512,6 @@ public class TurbolinksSession {
         });
     }
 
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void setFirstRestorationIdentifier(String firstRestorationIdentifier) {
-        addRestorationIdentifierToMap(firstRestorationIdentifier);
-    }
-
     /**
      * <p><b>JavascriptInterface only</b> Sets internal flags that indicate whether Turbolinks in
      * the webView is ready for use.</p>
