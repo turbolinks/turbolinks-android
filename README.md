@@ -203,7 +203,7 @@ By default the library sets some minimally intrusive WebSettings on the shared W
 If however these are not to your liking, you can always override them. The `WebView` is always available to you via `getWebView()`, and you can update the `WebSettings` to your liking:
 
 ```java
-WebSettings settings = Turbolinks.getDefault().getWebView().getSettings();
+WebSettings settings = TurbolinksSession.getDefault().getWebView().getSettings();
 settings.setDomStorageEnabled(false);
 settings.setAllowFileAccess(false);
 ```
@@ -215,7 +215,7 @@ settings.setAllowFileAccess(false);
 If you have custom Javascript on your pages that you want to access as JavascriptInterfaces, you can add them like so:
 
 ```java
-Turbolinks.getDefault().addJavascriptInterface(this, "MyCustomJavascriptInterface");
+TurbolinksSession.getDefault().addJavascriptInterface(this, "MyCustomJavascriptInterface");
 ```
 
 The Java object being passed in can be anything, as long as it has at least one method annotated with `@android.webkit.JavascriptInterface`. Names of interfaces must be unique, or they will be overwritten in the library's map.

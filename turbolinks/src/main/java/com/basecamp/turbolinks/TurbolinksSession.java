@@ -29,8 +29,8 @@ public class TurbolinksSession {
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
     // ---------------------------------------------------
-    boolean turbolinksBridgeInjected; // Script injected into DOM
 
+    boolean turbolinksBridgeInjected; // Script injected into DOM
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
@@ -65,8 +65,7 @@ public class TurbolinksSession {
     // ---------------------------------------------------
 
     /**
-     * Private constructor called to return a new Turbolinks instance
-     * that can be used as the singleton throughout the app's in-memory session.
+     * Private constructor called to return a new Turbolinks instance.
      *
      * @param context A standard Android context.
      */
@@ -145,12 +144,26 @@ public class TurbolinksSession {
     // Initialization
     // ---------------------------------------------------
 
+    /**
+     * Creates a brand new TurbolinksSession that the calling application will be responsible for
+     * managing.
+     *
+     * @param context A standard Android context.
+     * @return TurbolinksSession to be managed by the calling application.
+     */
     public static TurbolinksSession getNew(Context context) {
         TurbolinksLog.d("TurbolinksSession getNew called");
 
         return new TurbolinksSession(context);
     }
 
+    /**
+     * Convenience method that returns a default TurbolinksSession. This is useful for when an
+     * app only needs one instance of a TurbolinksSession.
+     *
+     * @param context A standard Android context.
+     * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
+     */
     public static TurbolinksSession getDefault(Context context) {
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
@@ -164,6 +177,9 @@ public class TurbolinksSession {
         return defaultInstance;
     }
 
+    /**
+     * Resets the default TurbolinksSession instance to null in case you want a fresh session.
+     */
     public static void resetDefault() {
         defaultInstance = null;
     }
@@ -173,17 +189,15 @@ public class TurbolinksSession {
     // ---------------------------------------------------
 
     /**
-     * <p><b>REQUIRED</b> All chained calls to Turbolinks must start here with
-     * Turbolinks.activity(activity).</p>
-     *
-     * <p>Turbolinks requires an Activity context to be provided for clarity --
-     * in other words, you cannot use an ApplicationContext with Turbolinks.</p>
+     * <p><b>REQUIRED</b> Turbolinks requires a context for a variety of uses, and for maximum clarity
+     * we ask for an Activity context instead of a generic one. (On occassion, we've run into WebView
+     * bugs where an Activity is the only fix).</p>
      *
      * <p>It's best to pass a new activity to Turbolinks for each new visit for clarity. This ensures
      * there is a one-to-one relationship maintained between internal activity IDs and visit IDs.</p>
      *
      * @param activity An Android Activity, one per visit.
-     * @return The Turbolinks singleton, to continue the chained calls.
+     * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession activity(Activity activity) {
         this.activity = activity;
@@ -197,11 +211,11 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required to that callbacks
+     * <p><b>REQUIRED</b> >A {@link TurbolinksAdapter} implementation is required so that callbacks
      * during the Turbolinks event lifecycle can be passed back to your app.</p>
      *
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
-     * @return The Turbolinks singleton, to continue the chained calls.
+     * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession adapter(Object turbolinksAdapter) {
         if (turbolinksAdapter instanceof TurbolinksAdapter) {
@@ -214,11 +228,11 @@ public class TurbolinksSession {
 
     /**
      * <p><b>REQUIRED</b> A {@link TurbolinksView} object that's been inflated in a custom layout is
-     * required so that library can manage various view-related tasks: attaching/detaching the
+     * required so the library can manage various view-related tasks: attaching/detaching the
      * internal webView, showing/hiding a progress loading view, etc.</p>
      *
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
-     * @return The Turbolinks singleton, to continue the chained calls.
+     * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
@@ -228,9 +242,8 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p><b>REQUIRED</b> The call that executes a Turbolinks visit. Must be called at the end of
-     * the chain. All required parameters will first be validated before firing --
-     * IllegalArgumentException will be thrown if they aren't all provided.</p>
+     * <p><b>REQUIRED</b> Executes a Turbolinks visit. Must be called at the end of the chain --
+     * all required parameters will first be validated before firing.</p>
      *
      * @param location The URL to visit.
      */
@@ -254,13 +267,13 @@ public class TurbolinksSession {
         // Reset so that cached snapshot is not the default for the next visit
         restoreWithCachedSnapshot = false;
 
-        /**
-         * if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is
-         * typically a slow connection load. This allows the previous cold boot to finish (inject TL).
-         * No matter what, if new requests are sent to Turbolinks via Turbolinks.location, we'll
-         * always have the last desired location. And when setTurbolinksIsReady(true) is called,
-         * we open that last location.
-         */
+        /*
+        if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is
+        typically a slow connection load. This allows the previous cold boot to finish (inject TL).
+        No matter what, if new requests are sent to Turbolinks via Turbolinks.location, we'll
+        always have the last desired location. And when setTurbolinksIsReady(true) is called,
+        we open that last location.
+        */
     }
 
     // ---------------------------------------------------
@@ -276,7 +289,7 @@ public class TurbolinksSession {
      * @param progressBarResId The resource ID of a progressBar object inside the progressView.
      * @param progressBarDelay The delay, in milliseconds, before the progress bar should be displayed
      *                         inside the progress view (default is 500 ms).
-     * @return The Turbolinks singleton, to continue the chained calls.
+     * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession progressView(View progressView, int progressBarResId, int progressBarDelay) {
         this.progressView = progressView;
@@ -297,7 +310,7 @@ public class TurbolinksSession {
      *
      * @param restoreWithCachedSnapshot If true, will restore scroll position. If false, will not restore
      *                                  scroll position.
-     * @return The Turbolinks singleton, to continue the chained calls.
+     * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         this.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
@@ -576,7 +589,7 @@ public class TurbolinksSession {
     /**
      * <p>Returns the activity attached to the Turbolinks call.</p>
      *
-     * @return The attached activity, or null if Turbolinks is not initialized.
+     * @return The attached activity.
      */
     public Activity getActivity() {
         return activity;
@@ -585,7 +598,7 @@ public class TurbolinksSession {
     /**
      * <p>Returns the internal WebView used by Turbolinks.</p>
      *
-     * @return The WebView used by Turbolinks, or null if Turbolinks is not initialized.
+     * @return The WebView used by Turbolinks.
      */
     public WebView getWebView() {
         return webView;
@@ -623,7 +636,7 @@ public class TurbolinksSession {
     /**
      * <p>Tells the logger whether to allow logging in debug mode.</p>
      *
-     * @param enabled If true, debug logging is enabled.
+     * @param enabled If true debug logging is enabled.
      */
     public void setDebugLoggingEnabled(boolean enabled) {
         TurbolinksLog.setDebugLoggingEnabled(enabled);
@@ -632,7 +645,7 @@ public class TurbolinksSession {
     /**
      * <p>Provides the status of whether Turbolinks is initialized and ready for use.</p>
      *
-     * @return True if Turbolinks is both initialized and ready for use.
+     * @return True if Turbolinks has been fully loaded and detected on the page.
      */
     public boolean turbolinksIsReady() {
         return turbolinksIsReady;
@@ -674,7 +687,7 @@ public class TurbolinksSession {
 
     /**
      * <p>Shows the progress view, either a custom one provided or the default.</p>
-     * <p/>
+     *
      * <p>A default progress view is inflated if {@link #progressView} isn't called.
      * If already inflated, progress view is fully detached before being shown since it's reused.</p>
      */

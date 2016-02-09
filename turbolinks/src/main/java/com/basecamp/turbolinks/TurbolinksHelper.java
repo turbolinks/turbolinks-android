@@ -31,7 +31,7 @@ class TurbolinksHelper {
      * <p>Creates the shared webView used throughout the lifetime of the Turbolinks singleton.</p>
      *
      * @param context Any activity context.
-     * @return
+     * @return The shared WebView.
      */
     static WebView createWebView(Context context) {
         MutableContextWrapper contextWrapper = new MutableContextWrapper(context.getApplicationContext());
@@ -131,7 +131,7 @@ class TurbolinksHelper {
     }
 
     /**
-     * <p>>Runs raw Javascript that's passed in. You are responsible for encoding/escaping the
+     * <p>Runs raw Javascript that's passed in. You are responsible for encoding/escaping the
      * function call.</p>
      *
      * @param context An activity context.
