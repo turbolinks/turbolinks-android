@@ -7,7 +7,7 @@ This library has been in use and tested in the wild since November 2015 in the a
 Our goal for this library was that it'd be easy on our fellow programmers:
 
 - **Easy to start**: one jCenter dependency, one custom view, one adapter interface to implement. No other requirements.
-- **Easy to use**: one reusable static method call.
+- **Easy to use**: full access to the Turbolinks class with a default instance provided.
 - **Easy to understand**: tidy code backed by solid documentation via [Javadocs](http://basecamp.github.io/turbolinks-android/javadoc/) and this README.
 
 ## Contents
@@ -82,11 +82,8 @@ protected void onCreate(Bundle savedInstanceState) {
     // layout in step 1.
     turbolinksView = (TurbolinksView) findViewById(R.id.turbolinks_view);
 
-    if (!Turbolinks.isInitialized()) {
-        Turbolinks.initialize(this);
-    }
-
-    Turbolinks.activity(this)
+    Turbolinks.getDefault(this)
+              .activity(this)
               .adapter(this)
               .view(turbolinksView)
               .visit("https://basecamp.com");
@@ -151,6 +148,29 @@ This is a callback from Turbolinks telling you that a change has been detected i
 
 The library will automatically fall back to cold booting the location (which it must do since resources have been changed) and then will notify you via this callback that the page was invalidated. This is an opportunity for you to clean up any UI state that you might have lingering around that may no longer be valid (like a screenshot, title data, etc.)
 
+### Custom Instance(s) of Turbolinks
+
+We provide a single, reusable instance of Turbolinks that you can access through this convenience method:
+
+```java
+Turbolinks turbolinks = Turbolinks.getDefault(context);
+```
+
+If you need greater control, you can always create your own instance(s) of Turbolinks with:
+
+```java
+Turbolinks myTurbolinks = Turbolinks.getNew(context);
+```
+
+Some things to keep in mind if you create your own instance of Turbolinks:
+
+- You'll be responsible for managing the lifecycle of the instance you create and ensure it's being reused for each subsequent Turbolinks call. In other words, if you call `.getNew(context)` accidentally on every visit, you'll be getting a new instance and cold-booting every time, thereby defeating the purpose of Turbolinks.
+- The best places to manage the lifecycle of your instance is most likely in one of two places:
+  - A singleton helper class that instantiates once/returns always
+  - A custom object that extends `Application`
+
+You'll need to weigh the benefits and complexities of those options, but the bottom line is that you'll want to carefully manage the lifecycle of your Turbolinks instance(s).
+
 ### Custom Progress View
 
 By default the library will provide you with a progress view with a progress bar -- a simple `FrameLayout` that covers the `WebView` while it's loading, and shows a spinner after 500ms.
@@ -158,7 +178,8 @@ By default the library will provide you with a progress view with a progress bar
 If that doesn't meet your needs, you can also pass in your own custom progress view like so:
 
 ```java
-Turbolinks.activity(this)
+Turbolinks.getDefault(this)
+          .activity(this)
           .adapter(this)
           .progressView(progressView, resourceIdOfProgressBar, progressBarDelay)
           .view(turbolinksView)
@@ -203,8 +224,8 @@ The Java object being passed in can be anything, as long as it has at least one 
 
 A demo app is bundled with the library, and works in two parts:
 
-1. A tiny, Turbolinks-enabled Sinatra web app that you can run locally.
-1. A tiny Android app that connects to the Sinatra app.
+1. A tiny Turbolinks-enabled Sinatra web app that you can run locally.
+1. A tiny Android app that connects to the Sinatra web app.
 
 ### Prerequisites
 
@@ -218,16 +239,18 @@ A demo app is bundled with the library, and works in two parts:
 ### Start the Demo Sinatra Web App
 
 - From the command line, change directories to `<project-root>/demoapp/server`.
-- Run `bundle`.
-- Run `rackup`.
+- Run `bundle`
+- Run `rackup --host 0.0.0.0`
 
-You should see a message saying what port the demo web app is running on (usually something like http://localhost:9292/).
+You should see a message saying what port the demo web app is running on. It usually looks like:
+
+`Listening on 0.0.0.0:9292`
 
 ### Start the Demo Android App
 
 - Ensure your web app and Android device are on the same network.
 - Go to [`MainActivity`](/demoapp/src/main/java/com/basecamp/turbolinks/demo/MainActivity.java).
-- Find the `BASE_URL` String at the top of the class. Change the IP/port of the address to your machine's IP.
+- Find the `BASE_URL` String at the top of the class. Change the IP and port of that string to match your IP and the port the Sinatra web app is running on.
 - Build/run the app to your device.
 
 ## Contributing

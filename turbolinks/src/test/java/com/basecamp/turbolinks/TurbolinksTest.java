@@ -34,7 +34,33 @@ public class TurbolinksTest extends BaseTest {
         super.setup();
         MockitoAnnotations.initMocks(this);
 
-        turbolinks = Turbolinks.getInstance(context);
+        turbolinks = Turbolinks.getNew(context);
+    }
+
+    // -----------------------------------------------------------------------
+    // Initializing
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void getNewIsAlwaysNewInstance() {
+        Turbolinks defaultInstance = Turbolinks.getNew(context);
+
+        assertThat(defaultInstance).isNotEqualTo(Turbolinks.getNew(context));
+    }
+
+    @Test
+    public void getDefaultReturnsSameInstance() {
+        Turbolinks defaultInstance = Turbolinks.getDefault(context);
+
+        assertThat(defaultInstance).isEqualTo(Turbolinks.getDefault(context));
+    }
+
+    @Test
+    public void resetDefaultGetsNewDefaultInstance() {
+        Turbolinks defaultInstance = Turbolinks.getDefault(context);
+        Turbolinks.resetDefault();
+
+        assertThat(defaultInstance).isNotEqualTo(Turbolinks.getDefault(context));
     }
 
     // -----------------------------------------------------------------------

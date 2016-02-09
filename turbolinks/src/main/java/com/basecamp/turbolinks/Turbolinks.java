@@ -46,6 +46,8 @@ public class Turbolinks {
     View progressView;
     View progressBar;
 
+    static volatile Turbolinks defaultInstance;
+
     // ---------------------------------------------------
     // Final vars
     // ---------------------------------------------------
@@ -143,10 +145,27 @@ public class Turbolinks {
     // Initialization
     // ---------------------------------------------------
 
-    public static Turbolinks getInstance(Context context) {
-        TurbolinksLog.d("Turbolinks getInstance called");
+    public static Turbolinks getNew(Context context) {
+        TurbolinksLog.d("Turbolinks getNew called");
 
         return new Turbolinks(context);
+    }
+
+    public static Turbolinks getDefault(Context context) {
+        if (defaultInstance == null) {
+            synchronized (Turbolinks.class) {
+                if (defaultInstance == null) {
+                    TurbolinksLog.d("Default instance is null, creating new");
+                    defaultInstance = Turbolinks.getNew(context);
+                }
+            }
+        }
+
+        return defaultInstance;
+    }
+
+    public static void resetDefault() {
+        defaultInstance = null;
     }
 
     // ---------------------------------------------------
