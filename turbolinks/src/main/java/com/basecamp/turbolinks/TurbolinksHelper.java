@@ -28,9 +28,9 @@ class TurbolinksHelper {
     // ---------------------------------------------------
 
     /**
-     * <p>Creates the shared webView used throughout the lifetime of the Turbolinks singleton.</p>
+     * <p>Creates the shared webView used throughout the lifetime of the TurbolinksSession.</p>
      *
-     * @param context Any activity context.
+     * @param context Any Android context.
      * @return The shared WebView.
      */
     static WebView createWebView(Context context) {
@@ -61,7 +61,7 @@ class TurbolinksHelper {
     /**
      * <p>Gets the base64-encoded string of a local asset file (typically a Javascript or HTML file)</p>
      *
-     * @param context An activity context.
+     * @param context  An activity context.
      * @param filePath Local file path relative to the main/src directory.
      * @return A base-64 encoded string of the file contents.
      * @throws IOException Typically if a file cannot be found or read in.
@@ -75,11 +75,11 @@ class TurbolinksHelper {
     }
 
     /**
-     * <p>Injects Javascript into the singleton's webView.</p>
+     * <p>Injects Javascript into the webView.</p>
      *
-     * @param turbolinksSession The Turbolinks singleton.
-     * @param context An activity context.
-     * @param webView The shared webView.
+     * @param turbolinksSession The TurbolinksSession.
+     * @param context           Any Android context.
+     * @param webView           The shared webView.
      */
     static void injectTurbolinksBridge(final TurbolinksSession turbolinksSession, Context context, WebView webView) {
         try {
@@ -103,10 +103,10 @@ class TurbolinksHelper {
      * <p>JSONifies any arbitrary number of params and runs the the Javascript function in the
      * webView.</p>
      *
-     * @param context An activity context.
-     * @param webView The shared webView.
+     * @param context      An activity context.
+     * @param webView      The shared webView.
      * @param functionName The Javascript function name only (no parenthesis or parameters).
-     * @param params A comma delimited list of parameter values.
+     * @param params       A comma delimited list of parameter values.
      */
     static void runJavascript(Context context, final WebView webView, String functionName, Object... params) {
         final String fullJs;
@@ -134,8 +134,8 @@ class TurbolinksHelper {
      * <p>Runs raw Javascript that's passed in. You are responsible for encoding/escaping the
      * function call.</p>
      *
-     * @param context An activity context.
-     * @param webView The shared webView.
+     * @param context    An activity context.
+     * @param webView    The shared webView.
      * @param javascript The raw Javascript to be executed, fully escaped/encoded in advance.
      */
     static void runJavascriptRaw(Context context, final WebView webView, final String javascript) {
@@ -150,7 +150,7 @@ class TurbolinksHelper {
     /**
      * <p>Executes a given runnable on the main thread.</p>
      *
-     * @param context An activity context.
+     * @param context  An activity context.
      * @param runnable A runnable to execute on the main thread.
      */
     static void runOnMainThread(Context context, Runnable runnable) {

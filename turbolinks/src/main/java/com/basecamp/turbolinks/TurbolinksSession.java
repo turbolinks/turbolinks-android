@@ -57,7 +57,7 @@ public class TurbolinksSession {
     static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
     static final int PROGRESS_BAR_DELAY = 500;
 
-    final Context context;
+    final Context applicationContext;
     final WebView webView;
 
     // ---------------------------------------------------
@@ -67,15 +67,18 @@ public class TurbolinksSession {
     /**
      * Private constructor called to return a new Turbolinks instance.
      *
-     * @param context A standard Android context.
+     * @param applicationContext The application context to initialize a TurbolinksSession. We want
+     *                           this to be an application context since long-running objects,
+     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           lived context, like an activity, would cause a leak.
      */
-    private TurbolinksSession(final Context context) {
-        if (context == null) {
+    private TurbolinksSession(final Context applicationContext) {
+        if (applicationContext == null) {
             throw new IllegalArgumentException("Context must not be null.");
         }
 
-        this.context = context;
-        this.webView = TurbolinksHelper.createWebView(context);
+        this.applicationContext = applicationContext;
+        this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -86,7 +89,7 @@ public class TurbolinksSession {
             @Override
             public void onPageFinished(WebView view, String location) {
                 if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, context, webView);
+                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
                     turbolinksAdapter.onPageFinished();
 
                     TurbolinksLog.d("Page finished: " + location);
@@ -148,28 +151,34 @@ public class TurbolinksSession {
      * Creates a brand new TurbolinksSession that the calling application will be responsible for
      * managing.
      *
-     * @param context A standard Android context.
+     * @param applicationContext The application context to initialize a TurbolinksSession. We want
+     *                           this to be an application context since long-running objects,
+     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           lived context, like an activity, would cause a leak.
      * @return TurbolinksSession to be managed by the calling application.
      */
-    public static TurbolinksSession getNew(Context context) {
+    public static TurbolinksSession getNew(Context applicationContext) {
         TurbolinksLog.d("TurbolinksSession getNew called");
 
-        return new TurbolinksSession(context);
+        return new TurbolinksSession(applicationContext);
     }
 
     /**
      * Convenience method that returns a default TurbolinksSession. This is useful for when an
      * app only needs one instance of a TurbolinksSession.
      *
-     * @param context A standard Android context.
+     * @param applicationContext The application context to initialize a TurbolinksSession. We want
+     *                           this to be an application context since long-running objects,
+     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           lived context, like an activity, would cause a leak.
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
-    public static TurbolinksSession getDefault(Context context) {
+    public static TurbolinksSession getDefault(Context applicationContext) {
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
                     TurbolinksLog.d("Default instance is null, creating new");
-                    defaultInstance = TurbolinksSession.getNew(context);
+                    defaultInstance = TurbolinksSession.getNew(applicationContext);
                 }
             }
         }
@@ -394,7 +403,7 @@ public class TurbolinksSession {
         TurbolinksLog.d("visitRequestFailedWithStatusCode called");
 
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-            TurbolinksHelper.runOnMainThread(context, new Runnable() {
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
                 @Override
                 public void run() {
                     turbolinksAdapter.requestFailedWithStatusCode(statusCode);
@@ -438,7 +447,7 @@ public class TurbolinksSession {
         addRestorationIdentifierToMap(restorationIdentifier);
 
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-            TurbolinksHelper.runOnMainThread(context, new Runnable() {
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
                 @Override
                 public void run() {
                     turbolinksAdapter.visitCompleted();
@@ -461,7 +470,7 @@ public class TurbolinksSession {
 
         resetToColdBoot();
 
-        TurbolinksHelper.runOnMainThread(context, new Runnable() {
+        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
             @Override
             public void run() { // route through normal chain so progress view is shown, regular logging, etc.
                 turbolinksAdapter.pageInvalidated();
@@ -486,7 +495,7 @@ public class TurbolinksSession {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void hideProgressView(final String visitIdentifier) {
-        TurbolinksHelper.runOnMainThread(context, new Runnable() {
+        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
             @Override
             public void run() {
                 /**
@@ -525,7 +534,7 @@ public class TurbolinksSession {
         this.turbolinksIsReady = turbolinksIsReady;
 
         if (turbolinksIsReady) {
-            TurbolinksHelper.runOnMainThread(context, new Runnable() {
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
                 @Override
                 public void run() {
                     TurbolinksLog.d("TurbolinksSession is ready");
@@ -551,7 +560,7 @@ public class TurbolinksSession {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void turbolinksDoesNotExist() {
-        TurbolinksHelper.runOnMainThread(context, new Runnable() {
+        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
             @Override
             public void run() {
                 TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
@@ -605,8 +614,8 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p>Resets the singleton to go through the full cold booting sequence (full page load) on the
-     * next Turbolinks visit.</p>
+     * <p>Resets the TurbolinksSession to go through the full cold booting sequence (full page load)
+     * on the next Turbolinks visit.</p>
      */
     public void resetToColdBoot() {
         turbolinksBridgeInjected = false;
@@ -621,7 +630,7 @@ public class TurbolinksSession {
      * @param params       A comma delimited list of params. Params will be automatically JSONified.
      */
     public void runJavascript(final String functionName, final Object... params) {
-        TurbolinksHelper.runJavascript(context, webView, functionName, params);
+        TurbolinksHelper.runJavascript(applicationContext, webView, functionName, params);
     }
 
     /**
@@ -630,7 +639,7 @@ public class TurbolinksSession {
      * @param rawJavascript The full Javascript string that will be executed by the WebView.
      */
     public void runJavascriptRaw(String rawJavascript) {
-        TurbolinksHelper.runJavascriptRaw(context, webView, rawJavascript);
+        TurbolinksHelper.runJavascriptRaw(applicationContext, webView, rawJavascript);
     }
 
     /**
@@ -715,8 +724,8 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p>Convenience method to simply revisit the current location in the singleton. Useful so that
-     * different visit logic can be wrappered around this call in {@link #visit} or
+     * <p>Convenience method to simply revisit the current location in the TurbolinksSession. Useful
+     * so that different visit logic can be wrappered around this call in {@link #visit} or
      * {@link #setTurbolinksIsReady(boolean)}</p>
      */
     private void visitCurrentLocationWithTurbolinks() {

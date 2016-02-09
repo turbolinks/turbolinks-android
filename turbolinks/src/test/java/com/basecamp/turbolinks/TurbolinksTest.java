@@ -129,6 +129,9 @@ public class TurbolinksTest extends BaseTest {
 
     @Test
     public void visitStartedSavesCurrentVisitIdentifier() {
+        // Mock doesn't seem to work for running on the main thread
+        TurbolinksTestActivity activity = new TurbolinksTestActivity();
+
         turbolinksSession.currentVisitIdentifier = null;
 
         assertThat(turbolinksSession.currentVisitIdentifier).isNotEqualTo(VISIT_IDENTIFIER);
@@ -142,6 +145,9 @@ public class TurbolinksTest extends BaseTest {
 
     @Test
     public void visitRequestFailedWithStatusCodeCallsAdapter() {
+        // Mock doesn't seem to work for running on the main thread
+        TurbolinksTestActivity activity = new TurbolinksTestActivity();
+
         turbolinksSession.activity(activity)
             .adapter(adapter);
         turbolinksSession.currentVisitIdentifier = VISIT_IDENTIFIER;
@@ -152,6 +158,9 @@ public class TurbolinksTest extends BaseTest {
 
     @Test
     public void visitCompletedCallsAdapter() {
+        // Mock doesn't seem to work for running on the main thread
+        TurbolinksTestActivity activity = new TurbolinksTestActivity();
+
         turbolinksSession.activity(activity)
             .adapter(adapter);
         turbolinksSession.currentVisitIdentifier = VISIT_IDENTIFIER;
@@ -174,32 +183,10 @@ public class TurbolinksTest extends BaseTest {
 //    TODO: Robolectric having trouble with local resources directory
 //    @Test
 //    public void pageInvalidatedCallsAdapter() {
-//        Turbolinks.initialize(context);
-//        Turbolinks.activity(activity)
-//            .adapter(adapter)
-//            .view(view)
-//            .visit(LOCATION);
-//        Turbolinks.singleton.pageInvalidated();
-//
-//        verify(adapter).pageInvalidated();
 //    }
 //
 //    @Test
 //    public void pageInvalidatedResetsToColdBoot() {
-//        Turbolinks.initialize(context);
-//        Turbolinks.activity(activity)
-//            .adapter(adapter)
-//            .view(view)
-//            .visit(LOCATION);
-//        Turbolinks.singleton.turbolinksBridgeInjected = true;
-//        Turbolinks.singleton.turbolinksIsReady = true;
-//        Turbolinks.singleton.coldBootInProgress = false;
-//
-//        Turbolinks.singleton.pageInvalidated();
-//
-//        assertThat(Turbolinks.singleton.turbolinksBridgeInjected).isTrue();
-//        assertThat(Turbolinks.singleton.turbolinksIsReady).isTrue();
-//        assertThat(Turbolinks.singleton.coldBootInProgress).isFalse();
 //    }
 
     // -----------------------------------------------------------------------
@@ -208,6 +195,10 @@ public class TurbolinksTest extends BaseTest {
 
     @Test
     public void hideProgressViewNullsView() {
+        // Mock doesn't seem to work for running on the main thread
+        TurbolinksTestActivity activity = new TurbolinksTestActivity();
+
+        turbolinksSession.activity(activity);
         turbolinksSession.turbolinksIsReady = true;
         turbolinksSession.turbolinksView = view;
         turbolinksSession.progressView = new FrameLayout(context);
