@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.basecamp.turbolinks.Turbolinks;
+import com.basecamp.turbolinks.TurbolinksSession;
 import com.basecamp.turbolinks.TurbolinksAdapter;
 import com.basecamp.turbolinks.TurbolinksView;
 
@@ -28,20 +28,16 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
         // Find the custom TurbolinksView object in your layout
         turbolinksView = (TurbolinksView) findViewById(R.id.turbolinks_view);
 
-        // Ensure Turbolinks is initialized before you do anything
-        if (!Turbolinks.isInitialized()) {
-            Turbolinks.initialize(this);
-        }
-
         // For this demo app, we force debug logging on. You will only want to do
         // this for debug builds of your app (it is off by default)
-        Turbolinks.setDebugLoggingEnabled(true);
+        TurbolinksSession.getDefault(this).setDebugLoggingEnabled(true);
 
         // For this example we set a default location, unless one is passed in through an intent
         location = getIntent().getStringExtra(INTENT_URL) != null ? getIntent().getStringExtra(INTENT_URL) : BASE_URL;
 
         // Execute the visit
-        Turbolinks.activity(this)
+        TurbolinksSession.getDefault(this)
+            .activity(this)
             .adapter(this)
             .view(turbolinksView)
             .visit(location);
@@ -53,7 +49,8 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
 
         // Since the webView is shared between activities, we need to tell Turbolinks
         // to load the location from the previous activity upon restarting
-        Turbolinks.activity(this)
+        TurbolinksSession.getDefault(this)
+            .activity(this)
             .adapter(this)
             .restoreWithCachedSnapshot(true)
             .view(turbolinksView)
@@ -107,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
     // Simply forwards to an error page, but you could alternatively show your own native screen
     // or do whatever other kind of error handling you want.
     private void handleError(int code) {
-        Turbolinks.activity(this)
+        TurbolinksSession.getDefault(this)
+            .activity(this)
             .adapter(this)
             .restoreWithCachedSnapshot(false)
             .view(turbolinksView)

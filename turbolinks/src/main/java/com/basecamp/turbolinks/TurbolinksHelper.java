@@ -77,11 +77,11 @@ class TurbolinksHelper {
     /**
      * <p>Injects Javascript into the singleton's webView.</p>
      *
-     * @param singleton The Turbolinks singleton.
+     * @param turbolinksSession The Turbolinks singleton.
      * @param context An activity context.
      * @param webView The shared webView.
      */
-    static void injectTurbolinksBridge(final Turbolinks singleton, Context context, WebView webView) {
+    static void injectTurbolinksBridge(final TurbolinksSession turbolinksSession, Context context, WebView webView) {
         try {
             String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js");
             String jsCall = String.format(scriptInjectionFormat, script);
@@ -89,8 +89,8 @@ class TurbolinksHelper {
             webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String s) {
-                    if (singleton != null) {
-                        singleton.turbolinksBridgeInjected = Boolean.parseBoolean(s);
+                    if (turbolinksSession != null) {
+                        turbolinksSession.turbolinksBridgeInjected = Boolean.parseBoolean(s);
                     }
                 }
             });

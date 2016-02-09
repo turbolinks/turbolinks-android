@@ -7,7 +7,7 @@ This library has been in use and tested in the wild since November 2015 in the a
 Our goal for this library was that it'd be easy on our fellow programmers:
 
 - **Easy to start**: one jCenter dependency, one custom view, one adapter interface to implement. No other requirements.
-- **Easy to use**: one reusable static method call.
+- **Easy to use**: full access to the TurbolinksSession, along with a convenience default instance.
 - **Easy to understand**: tidy code backed by solid documentation via [Javadocs](http://basecamp.github.io/turbolinks-android/javadoc/) and this README.
 
 ## Contents
@@ -69,7 +69,7 @@ Right off the bat, you don't need to worry about handling every callback, especi
 
 Beyond this README, you can get a good feel for the callbacks from the [Javadoc](http://basecamp.github.io/turbolinks-android/javadoc/) and the [demo app](/demoapp).
 
-### 3. Initialize Turbolinks and Visit a Location
+### 3. Get the Default TurbolinksSession and Visit a Location
 
 From your activity that implements the `TurbolinksAdapter` interface, here's how you tell Turbolinks to visit a location:
 
@@ -82,14 +82,11 @@ protected void onCreate(Bundle savedInstanceState) {
     // layout in step 1.
     turbolinksView = (TurbolinksView) findViewById(R.id.turbolinks_view);
 
-    if (!Turbolinks.isInitialized()) {
-        Turbolinks.initialize(this);
-    }
-
-    Turbolinks.activity(this)
-              .adapter(this)
-              .view(turbolinksView)
-              .visit("https://basecamp.com");
+    TurbolinksSession.getDefault(this)
+                     .activity(this)
+                     .adapter(this)
+                     .view(turbolinksView)
+                     .visit("https://basecamp.com");
 }
 ```
 
@@ -151,6 +148,29 @@ This is a callback from Turbolinks telling you that a change has been detected i
 
 The library will automatically fall back to cold booting the location (which it must do since resources have been changed) and then will notify you via this callback that the page was invalidated. This is an opportunity for you to clean up any UI state that you might have lingering around that may no longer be valid (like a screenshot, title data, etc.)
 
+### Custom Instance(s) of TurbolinksSession
+
+We provide a single, reusable instance of Turbolinks that you can access through this convenience method:
+
+```java
+TurbolinksSession turbolinksSession = TurbolinksSession.getDefault(context);
+```
+
+If you need greater control, you can always create your own instance(s) of Turbolinks with:
+
+```java
+TurbolinksSession myTurbolinksSession = TurbolinksSession.getNew(context);
+```
+
+Some things to keep in mind if you create your own instance of TurbolinksSession:
+
+- You'll be responsible for managing the lifecycle of the TurbolinksSession instance you create and ensure it's being reused for each subsequent Turbolinks call. In other words, if you call `.getNew(context)` accidentally on every visit, you'll be getting a new session instance and cold-booting every time, thereby defeating the purpose of Turbolinks.
+- The best places to manage the lifecycle of your instance is most likely in one of two places:
+  - A singleton helper class that instantiates once/returns always
+  - A custom object that extends `Application`
+
+You'll need to weigh the benefits and complexities of those options, but the bottom line is that you'll want to carefully manage the lifecycle of your Turbolinks instance(s).
+
 ### Custom Progress View
 
 By default the library will provide you with a progress view with a progress bar -- a simple `FrameLayout` that covers the `WebView` while it's loading, and shows a spinner after 500ms.
@@ -158,11 +178,12 @@ By default the library will provide you with a progress view with a progress bar
 If that doesn't meet your needs, you can also pass in your own custom progress view like so:
 
 ```java
-Turbolinks.activity(this)
-          .adapter(this)
-          .progressView(progressView, resourceIdOfProgressBar, progressBarDelay)
-          .view(turbolinksView)
-          .visit("https://basecamp.com");
+TurbolinksSession.getDefault(this)
+                 .activity(this)
+                 .adapter(this)
+                 .progressView(progressView, resourceIdOfProgressBar, progressBarDelay)
+                 .view(turbolinksView)
+                 .visit("https://basecamp.com");
 ```
 
 Some notes about using a custom progress view:
@@ -179,10 +200,10 @@ By default the library sets some minimally intrusive WebSettings on the shared W
 - `setDomStorageEnabled(true)`
 - `setDatabaseEnabled(true)`
 
-If however these are not to your liking, you can always override them. The `WebView` is always available to you via `Turbolinks.getWebView()`, and you can update the `WebSettings` to your liking:
+If however these are not to your liking, you can always override them. The `WebView` is always available to you via `getWebView()`, and you can update the `WebSettings` to your liking:
 
 ```java
-WebSettings settings = Turbolinks.getWebView().getSettings();
+WebSettings settings = Turbolinks.getDefault().getWebView().getSettings();
 settings.setDomStorageEnabled(false);
 settings.setAllowFileAccess(false);
 ```
@@ -194,7 +215,7 @@ settings.setAllowFileAccess(false);
 If you have custom Javascript on your pages that you want to access as JavascriptInterfaces, you can add them like so:
 
 ```java
-Turbolinks.addJavascriptInterface(this, "MyCustomJavascriptInterface");
+Turbolinks.getDefault().addJavascriptInterface(this, "MyCustomJavascriptInterface");
 ```
 
 The Java object being passed in can be anything, as long as it has at least one method annotated with `@android.webkit.JavascriptInterface`. Names of interfaces must be unique, or they will be overwritten in the library's map.
@@ -203,8 +224,8 @@ The Java object being passed in can be anything, as long as it has at least one 
 
 A demo app is bundled with the library, and works in two parts:
 
-1. A tiny, Turbolinks-enabled Sinatra web app that you can run locally.
-1. A tiny Android app that connects to the Sinatra app.
+1. A tiny Turbolinks-enabled Sinatra web app that you can run locally.
+1. A tiny Android app that connects to the Sinatra web app.
 
 ### Prerequisites
 
@@ -218,16 +239,18 @@ A demo app is bundled with the library, and works in two parts:
 ### Start the Demo Sinatra Web App
 
 - From the command line, change directories to `<project-root>/demoapp/server`.
-- Run `bundle`.
-- Run `rackup`.
+- Run `bundle`
+- Run `rackup --host 0.0.0.0`
 
-You should see a message saying what port the demo web app is running on (usually something like http://localhost:9292/).
+You should see a message saying what port the demo web app is running on. It usually looks like:
+
+`Listening on 0.0.0.0:9292`
 
 ### Start the Demo Android App
 
 - Ensure your web app and Android device are on the same network.
 - Go to [`MainActivity`](/demoapp/src/main/java/com/basecamp/turbolinks/demo/MainActivity.java).
-- Find the `BASE_URL` String at the top of the class. Change the IP/port of the address to your machine's IP.
+- Find the `BASE_URL` String at the top of the class. Change the IP and port of that string to match your IP and the port the Sinatra web app is running on.
 - Build/run the app to your device.
 
 ## Contributing

@@ -24,14 +24,12 @@ import java.util.HashMap;
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
  */
-public class Turbolinks {
+public class TurbolinksSession {
 
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
     // ---------------------------------------------------
     boolean turbolinksBridgeInjected; // Script injected into DOM
-
-    static volatile Turbolinks singleton = null;
 
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
@@ -39,14 +37,16 @@ public class Turbolinks {
     int progressBarDelay;
     long previousOverrideTime;
     Activity activity;
-    HashMap<String, Object> javascriptInterfaces;
-    HashMap<String, String> restorationIdentifierMap;
+    HashMap<String, Object> javascriptInterfaces = new HashMap<>();
+    HashMap<String, String> restorationIdentifierMap = new HashMap<>();
     String location;
     String currentVisitIdentifier;
     TurbolinksAdapter turbolinksAdapter;
     TurbolinksView turbolinksView;
     View progressView;
     View progressBar;
+
+    static volatile TurbolinksSession defaultInstance;
 
     // ---------------------------------------------------
     // Final vars
@@ -65,12 +65,12 @@ public class Turbolinks {
     // ---------------------------------------------------
 
     /**
-     * Private constructor called by {@link #initialize(Context)} to return a new Turbolinks instance
+     * Private constructor called to return a new Turbolinks instance
      * that can be used as the singleton throughout the app's in-memory session.
      *
      * @param context A standard Android context.
      */
-    private Turbolinks(final Context context) {
+    private TurbolinksSession(final Context context) {
         if (context == null) {
             throw new IllegalArgumentException("Context must not be null.");
         }
@@ -87,7 +87,7 @@ public class Turbolinks {
             @Override
             public void onPageFinished(WebView view, String location) {
                 if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(singleton, context, webView);
+                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, context, webView);
                     turbolinksAdapter.onPageFinished();
 
                     TurbolinksLog.d("Page finished: " + location);
@@ -145,29 +145,27 @@ public class Turbolinks {
     // Initialization
     // ---------------------------------------------------
 
-    /**
-     * <p>Must be the first step in using Turbolinks that instantiates a new singleton object that will
-     * be used throughout the lifetime of the app while in memory.</p>
-     *
-     * <p>You only need to initialize Turbolinks once, and you can check if it's already initialized
-     * with {@link #isInitialized()}.</p>
-     *
-     * @param context An activity context.
-     */
-    public static void initialize(Context context) {
-        if (singleton != null) {
-            throw new IllegalStateException("Turbolinks.initialize() has already been called.");
-        }
+    public static TurbolinksSession getNew(Context context) {
+        TurbolinksLog.d("TurbolinksSession getNew called");
 
-        synchronized (Turbolinks.class) {
-            if (singleton == null) {
-                singleton = new Turbolinks(context);
-                singleton.restorationIdentifierMap = new HashMap<>();
-                singleton.javascriptInterfaces = new HashMap<>();
+        return new TurbolinksSession(context);
+    }
+
+    public static TurbolinksSession getDefault(Context context) {
+        if (defaultInstance == null) {
+            synchronized (TurbolinksSession.class) {
+                if (defaultInstance == null) {
+                    TurbolinksLog.d("Default instance is null, creating new");
+                    defaultInstance = TurbolinksSession.getNew(context);
+                }
             }
         }
 
-        TurbolinksLog.d("Turbolinks initialized");
+        return defaultInstance;
+    }
+
+    public static void resetDefault() {
+        defaultInstance = null;
     }
 
     // ---------------------------------------------------
@@ -187,15 +185,15 @@ public class Turbolinks {
      * @param activity An Android Activity, one per visit.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public static Turbolinks activity(Activity activity) {
-        singleton.activity = activity;
+    public TurbolinksSession activity(Activity activity) {
+        this.activity = activity;
 
-        Context webViewContext = singleton.webView.getContext();
+        Context webViewContext = webView.getContext();
         if (webViewContext instanceof MutableContextWrapper) {
-            ((MutableContextWrapper) webViewContext).setBaseContext(singleton.activity);
+            ((MutableContextWrapper) webViewContext).setBaseContext(this.activity);
         }
 
-        return singleton;
+        return this;
     }
 
     /**
@@ -205,10 +203,10 @@ public class Turbolinks {
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks adapter(Object turbolinksAdapter) {
+    public TurbolinksSession adapter(Object turbolinksAdapter) {
         if (turbolinksAdapter instanceof TurbolinksAdapter) {
-            singleton.turbolinksAdapter = (TurbolinksAdapter) turbolinksAdapter;
-            return singleton;
+            this.turbolinksAdapter = (TurbolinksAdapter) turbolinksAdapter;
+            return this;
         } else {
             throw new IllegalArgumentException("Class passed as adapter does not implement TurbolinksAdapter interface.");
         }
@@ -222,11 +220,11 @@ public class Turbolinks {
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks view(TurbolinksView turbolinksView) {
-        singleton.turbolinksView = turbolinksView;
-        singleton.turbolinksView.attachWebView(singleton.webView);
+    public TurbolinksSession view(TurbolinksView turbolinksView) {
+        this.turbolinksView = turbolinksView;
+        this.turbolinksView.attachWebView(webView);
 
-        return singleton;
+        return this;
     }
 
     /**
@@ -239,22 +237,22 @@ public class Turbolinks {
     public void visit(String location) {
         TurbolinksLog.d("visit called");
 
-        singleton.location = location;
+        this.location = location;
 
         validateRequiredParams();
         initProgressView();
 
-        if (singleton.turbolinksIsReady) {
+        if (turbolinksIsReady) {
             visitCurrentLocationWithTurbolinks();
         }
 
-        if (!singleton.turbolinksIsReady && !singleton.coldBootInProgress) {
+        if (!turbolinksIsReady && !coldBootInProgress) {
             TurbolinksLog.d("Cold booting: " + location);
-            singleton.webView.loadUrl(location);
+            webView.loadUrl(location);
         }
 
         // Reset so that cached snapshot is not the default for the next visit
-        singleton.restoreWithCachedSnapshot = false;
+        restoreWithCachedSnapshot = false;
 
         /**
          * if (!turbolinksIsReady && coldBootInProgress), we don't fire a new visit. This is
@@ -280,16 +278,16 @@ public class Turbolinks {
      *                         inside the progress view (default is 500 ms).
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
-        singleton.progressView = progressView;
-        singleton.progressBar = progressView.findViewById(progressBarResId);
-        singleton.progressBarDelay = progressBarDelay;
+    public TurbolinksSession progressView(View progressView, int progressBarResId, int progressBarDelay) {
+        this.progressView = progressView;
+        this.progressBar = progressView.findViewById(progressBarResId);
+        this.progressBarDelay = progressBarDelay;
 
-        if (singleton.progressBar == null) {
+        if (this.progressBar == null) {
             throw new IllegalArgumentException("A progress bar view must be provided in your custom progressView.");
         }
 
-        return singleton;
+        return this;
     }
 
     /**
@@ -301,9 +299,9 @@ public class Turbolinks {
      *                                  scroll position.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
-        singleton.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
-        return singleton;
+    public TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+        this.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
+        return this;
     }
 
     // ---------------------------------------------------
@@ -324,8 +322,8 @@ public class Turbolinks {
     @android.webkit.JavascriptInterface
     public void visitProposedToLocationWithAction(String location, String action) {
         TurbolinksLog.d("visitProposedToLocationWithAction called");
-        
-        singleton.turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+
+        turbolinksAdapter.visitProposedToLocationWithAction(location, action);
     }
 
     /**
@@ -342,7 +340,7 @@ public class Turbolinks {
     public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
         TurbolinksLog.d("visitStarted called");
 
-        singleton.currentVisitIdentifier = visitIdentifier;
+        currentVisitIdentifier = visitIdentifier;
 
         runJavascript("webView.changeHistoryForVisitWithIdentifier", visitIdentifier);
         runJavascript("webView.issueRequestForVisitWithIdentifier", visitIdentifier);
@@ -386,7 +384,7 @@ public class Turbolinks {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
-                    singleton.turbolinksAdapter.requestFailedWithStatusCode(statusCode);
+                    turbolinksAdapter.requestFailedWithStatusCode(statusCode);
                 }
             });
         }
@@ -430,7 +428,7 @@ public class Turbolinks {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
-                    singleton.turbolinksAdapter.visitCompleted();
+                    turbolinksAdapter.visitCompleted();
                 }
             });
         }
@@ -453,9 +451,9 @@ public class Turbolinks {
         TurbolinksHelper.runOnMainThread(context, new Runnable() {
             @Override
             public void run() { // route through normal chain so progress view is shown, regular logging, etc.
-                singleton.turbolinksAdapter.pageInvalidated();
+                turbolinksAdapter.pageInvalidated();
 
-                visit(singleton.location);
+                visit(location);
             }
         });
     }
@@ -485,8 +483,8 @@ public class Turbolinks {
                  */
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
-                    singleton.turbolinksView.removeProgressView();
-                    singleton.progressView = null;
+                    turbolinksView.removeProgressView();
+                    progressView = null;
                 }
             }
         });
@@ -511,20 +509,20 @@ public class Turbolinks {
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
     public void setTurbolinksIsReady(boolean turbolinksIsReady) {
-        singleton.turbolinksIsReady = turbolinksIsReady;
+        this.turbolinksIsReady = turbolinksIsReady;
 
-        if (singleton.turbolinksIsReady) {
+        if (turbolinksIsReady) {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
-                    TurbolinksLog.d("Turbolinks is ready");
+                    TurbolinksLog.d("TurbolinksSession is ready");
                     visitCurrentLocationWithTurbolinks();
                 }
             });
 
             coldBootInProgress = false;
         } else {
-            TurbolinksLog.d("Turbolinks is not ready. Resetting and throw error.");
+            TurbolinksLog.d("TurbolinksSession is not ready. Resetting and throw error.");
             resetToColdBoot();
             visitRequestFailedWithStatusCode(currentVisitIdentifier, 500);
         }
@@ -545,7 +543,7 @@ public class Turbolinks {
             public void run() {
                 TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
                 resetToColdBoot();
-                singleton.turbolinksView.removeProgressView();
+                turbolinksView.removeProgressView();
             }
         });
     }
@@ -562,14 +560,14 @@ public class Turbolinks {
      * @param name   The unique name for the interface (must not use the reserved name "TurbolinksNative")
      */
     @SuppressLint("JavascriptInterface")
-    public static void addJavascriptInterface(Object object, String name) {
+    public void addJavascriptInterface(Object object, String name) {
         if (TextUtils.equals(name, JAVASCRIPT_INTERFACE_NAME)) {
             throw new IllegalArgumentException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
         }
 
-        if (singleton.javascriptInterfaces.get(name) == null) {
-            singleton.javascriptInterfaces.put(name, object);
-            singleton.webView.addJavascriptInterface(object, name);
+        if (javascriptInterfaces.get(name) == null) {
+            javascriptInterfaces.put(name, object);
+            webView.addJavascriptInterface(object, name);
 
             TurbolinksLog.d("Adding JavascriptInterface: " + name + " for " + object.getClass().toString());
         }
@@ -580,8 +578,8 @@ public class Turbolinks {
      *
      * @return The attached activity, or null if Turbolinks is not initialized.
      */
-    public static Activity getActivity() {
-        return isInitialized() ? singleton.activity : null;
+    public Activity getActivity() {
+        return activity;
     }
 
     /**
@@ -589,36 +587,18 @@ public class Turbolinks {
      *
      * @return The WebView used by Turbolinks, or null if Turbolinks is not initialized.
      */
-    public static WebView getWebView() {
-        return isInitialized() ? singleton.webView : null;
-    }
-
-    /**
-     * <p>Whether or not the Turboolinks singleton is ready for use.</p>
-     *
-     * @return True if singleton != null, otherwise false.
-     */
-    public static boolean isInitialized() {
-        return singleton != null;
-    }
-
-    /**
-     * <p>Sets the singleton to null and Turbolinks into an uninitialized state.</p>
-     */
-    public static void reset() {
-        singleton = null;
+    public WebView getWebView() {
+        return webView;
     }
 
     /**
      * <p>Resets the singleton to go through the full cold booting sequence (full page load) on the
      * next Turbolinks visit.</p>
      */
-    public static void resetToColdBoot() {
-        if (singleton != null) {
-            singleton.turbolinksBridgeInjected = false;
-            singleton.turbolinksIsReady = false;
-            singleton.coldBootInProgress = false;
-        }
+    public void resetToColdBoot() {
+        turbolinksBridgeInjected = false;
+        turbolinksIsReady = false;
+        coldBootInProgress = false;
     }
 
     /**
@@ -627,8 +607,8 @@ public class Turbolinks {
      * @param functionName The name of the function, without any parenthesis or params
      * @param params       A comma delimited list of params. Params will be automatically JSONified.
      */
-    public static void runJavascript(final String functionName, final Object... params) {
-        TurbolinksHelper.runJavascript(singleton.context, singleton.webView, functionName, params);
+    public void runJavascript(final String functionName, final Object... params) {
+        TurbolinksHelper.runJavascript(context, webView, functionName, params);
     }
 
     /**
@@ -636,8 +616,8 @@ public class Turbolinks {
      *
      * @param rawJavascript The full Javascript string that will be executed by the WebView.
      */
-    public static void runJavascriptRaw(String rawJavascript) {
-        TurbolinksHelper.runJavascriptRaw(singleton.context, singleton.webView, rawJavascript);
+    public void runJavascriptRaw(String rawJavascript) {
+        TurbolinksHelper.runJavascriptRaw(context, webView, rawJavascript);
     }
 
     /**
@@ -645,7 +625,7 @@ public class Turbolinks {
      *
      * @param enabled If true, debug logging is enabled.
      */
-    public static void setDebugLoggingEnabled(boolean enabled) {
+    public void setDebugLoggingEnabled(boolean enabled) {
         TurbolinksLog.setDebugLoggingEnabled(enabled);
     }
 
@@ -654,8 +634,8 @@ public class Turbolinks {
      *
      * @return True if Turbolinks is both initialized and ready for use.
      */
-    public static boolean turbolinksIsReady() {
-        return isInitialized() && singleton.turbolinksIsReady;
+    public boolean turbolinksIsReady() {
+        return turbolinksIsReady;
     }
 
     /**
@@ -664,8 +644,8 @@ public class Turbolinks {
      * @param location URL to visit.
      * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
-    public static void visitLocationWithAction(String location, String action) {
-        Turbolinks.runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, singleton.getRestorationIdentifierFromMap());
+    public void visitLocationWithAction(String location, String action) {
+        runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
     }
 
     // ---------------------------------------------------
@@ -678,8 +658,8 @@ public class Turbolinks {
      * @param value Restoration ID provided by Turbolinks.
      */
     private void addRestorationIdentifierToMap(String value) {
-        if (singleton.activity != null) {
-            singleton.restorationIdentifierMap.put(activity.toString(), value);
+        if (activity != null) {
+            restorationIdentifierMap.put(activity.toString(), value);
         }
     }
 
@@ -689,36 +669,36 @@ public class Turbolinks {
      * @return Restoration ID for the current activity.
      */
     private String getRestorationIdentifierFromMap() {
-        return singleton.restorationIdentifierMap.get(activity.toString());
+        return restorationIdentifierMap.get(activity.toString());
     }
 
     /**
      * <p>Shows the progress view, either a custom one provided or the default.</p>
-     *
+     * <p/>
      * <p>A default progress view is inflated if {@link #progressView} isn't called.
      * If already inflated, progress view is fully detached before being shown since it's reused.</p>
      */
     private void initProgressView() {
         // No custom progress view provided, use default
-        if (singleton.progressView == null) {
-            singleton.progressView = LayoutInflater.from(context).inflate(R.layout.turbolinks_progress, turbolinksView, false);
+        if (progressView == null) {
+            progressView = LayoutInflater.from(activity).inflate(R.layout.turbolinks_progress, turbolinksView, false);
 
-            TurbolinksLog.d("Turbolinks background: " + turbolinksView.getBackground());
-            singleton.progressView.setBackground(turbolinksView.getBackground());
-            singleton.progressBar = singleton.progressView.findViewById(R.id.turbolinks_default_progress_bar);
-            singleton.progressBarDelay = PROGRESS_BAR_DELAY;
+            TurbolinksLog.d("TurbolinksSession background: " + turbolinksView.getBackground());
+            progressView.setBackground(turbolinksView.getBackground());
+            progressBar = progressView.findViewById(R.id.turbolinks_default_progress_bar);
+            progressBarDelay = PROGRESS_BAR_DELAY;
 
-            Drawable background = turbolinksView.getBackground() != null ? turbolinksView.getBackground() : new ColorDrawable(context.getResources().getColor(android.R.color.white));
-            singleton.progressView.setBackground(background);
+            Drawable background = turbolinksView.getBackground() != null ? turbolinksView.getBackground() : new ColorDrawable(activity.getResources().getColor(android.R.color.white));
+            progressView.setBackground(background);
         }
 
         // A progress view can be reused, so ensure it's detached from its previous parent first
-        if (singleton.progressView.getParent() != null) {
-            ((ViewGroup) singleton.progressView.getParent()).removeView(singleton.progressView);
+        if (progressView.getParent() != null) {
+            ((ViewGroup) progressView.getParent()).removeView(progressView);
         }
 
         // Executed from here to account for progress bar delay
-        singleton.turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
+        turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
     }
 
     /**
@@ -727,36 +707,32 @@ public class Turbolinks {
      * {@link #setTurbolinksIsReady(boolean)}</p>
      */
     private void visitCurrentLocationWithTurbolinks() {
-        TurbolinksLog.d("Visiting current stored location: " + singleton.location);
+        TurbolinksLog.d("Visiting current stored location: " + location);
 
         String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
         visitLocationWithAction(TurbolinksHelper.encodeUrl(location), action);
     }
 
     /**
-     * <p>Ensures all required chained calls/parameters ({@link #initialize(Context)}, {@link #activity},
+     * <p>Ensures all required chained calls/parameters ({@link #activity},
      * {@link #adapter(Object)}, {@link #turbolinksView}, and location}) are
      * set before calling {@link #visit(String)}.</p>
      */
     private void validateRequiredParams() {
-        if (singleton == null) {
-            throw new IllegalStateException("Turbolinks.initialize(context) must be called.");
+        if (activity == null) {
+            throw new IllegalArgumentException("TurbolinksSession.activity(activity) must be called with a non-null object.");
         }
 
-        if (singleton.activity == null) {
-            throw new IllegalArgumentException("Turbolinks.activity(activity) must be called with a non-null object.");
+        if (turbolinksAdapter == null) {
+            throw new IllegalArgumentException("TurbolinksSession.adapter(turbolinksAdapter) must be called with a non-null object.");
         }
 
-        if (singleton.turbolinksAdapter == null) {
-            throw new IllegalArgumentException("Turbolinks.adapter(turbolinksAdapter) must be called with a non-null object.");
+        if (turbolinksView == null) {
+            throw new IllegalArgumentException("TurbolinksSession.view(turbolinksView) must be called with a non-null object.");
         }
 
-        if (singleton.turbolinksView == null) {
-            throw new IllegalArgumentException("Turbolinks.view(turbolinksView) must be called with a non-null object.");
-        }
-
-        if (TextUtils.isEmpty(singleton.location)) {
-            throw new IllegalArgumentException("Turbolinks.visit(location) location value must not be null.");
+        if (TextUtils.isEmpty(location)) {
+            throw new IllegalArgumentException("TurbolinksSession.visit(location) location value must not be null.");
         }
     }
 }
