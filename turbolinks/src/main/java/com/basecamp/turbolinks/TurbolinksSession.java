@@ -69,7 +69,7 @@ public class TurbolinksSession {
      *
      * @param applicationContext The application context to initialize a TurbolinksSession. We want
      *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           like the shared WebView, will be created using it. Passing a short
      *                           lived context, like an activity, would cause a leak.
      */
     private TurbolinksSession(final Context applicationContext) {
@@ -153,7 +153,7 @@ public class TurbolinksSession {
      *
      * @param applicationContext The application context to initialize a TurbolinksSession. We want
      *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           like the shared WebView, will be created using it. Passing a short
      *                           lived context, like an activity, would cause a leak.
      * @return TurbolinksSession to be managed by the calling application.
      */
@@ -169,7 +169,7 @@ public class TurbolinksSession {
      *
      * @param applicationContext The application context to initialize a TurbolinksSession. We want
      *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short-
+     *                           like the shared WebView, will be created using it. Passing a short
      *                           lived context, like an activity, would cause a leak.
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
@@ -220,7 +220,7 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p><b>REQUIRED</b> >A {@link TurbolinksAdapter} implementation is required so that callbacks
+     * <p><b>REQUIRED</b> A {@link TurbolinksAdapter} implementation is required so that callbacks
      * during the Turbolinks event lifecycle can be passed back to your app.</p>
      *
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.

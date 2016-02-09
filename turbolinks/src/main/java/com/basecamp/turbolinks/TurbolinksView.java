@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 
+/**
+ * The custom view to be implemented in your layout.
+ */
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
 
