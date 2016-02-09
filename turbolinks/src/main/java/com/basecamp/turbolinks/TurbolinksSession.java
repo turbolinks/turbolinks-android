@@ -24,7 +24,7 @@ import java.util.HashMap;
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
  */
-public class Turbolinks {
+public class TurbolinksSession {
 
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
@@ -46,7 +46,7 @@ public class Turbolinks {
     View progressView;
     View progressBar;
 
-    static volatile Turbolinks defaultInstance;
+    static volatile TurbolinksSession defaultInstance;
 
     // ---------------------------------------------------
     // Final vars
@@ -70,7 +70,7 @@ public class Turbolinks {
      *
      * @param context A standard Android context.
      */
-    private Turbolinks(final Context context) {
+    private TurbolinksSession(final Context context) {
         if (context == null) {
             throw new IllegalArgumentException("Context must not be null.");
         }
@@ -87,7 +87,7 @@ public class Turbolinks {
             @Override
             public void onPageFinished(WebView view, String location) {
                 if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(Turbolinks.this, context, webView);
+                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, context, webView);
                     turbolinksAdapter.onPageFinished();
 
                     TurbolinksLog.d("Page finished: " + location);
@@ -145,18 +145,18 @@ public class Turbolinks {
     // Initialization
     // ---------------------------------------------------
 
-    public static Turbolinks getNew(Context context) {
-        TurbolinksLog.d("Turbolinks getNew called");
+    public static TurbolinksSession getNew(Context context) {
+        TurbolinksLog.d("TurbolinksSession getNew called");
 
-        return new Turbolinks(context);
+        return new TurbolinksSession(context);
     }
 
-    public static Turbolinks getDefault(Context context) {
+    public static TurbolinksSession getDefault(Context context) {
         if (defaultInstance == null) {
-            synchronized (Turbolinks.class) {
+            synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
                     TurbolinksLog.d("Default instance is null, creating new");
-                    defaultInstance = Turbolinks.getNew(context);
+                    defaultInstance = TurbolinksSession.getNew(context);
                 }
             }
         }
@@ -185,7 +185,7 @@ public class Turbolinks {
      * @param activity An Android Activity, one per visit.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks activity(Activity activity) {
+    public TurbolinksSession activity(Activity activity) {
         this.activity = activity;
 
         Context webViewContext = webView.getContext();
@@ -203,7 +203,7 @@ public class Turbolinks {
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks adapter(Object turbolinksAdapter) {
+    public TurbolinksSession adapter(Object turbolinksAdapter) {
         if (turbolinksAdapter instanceof TurbolinksAdapter) {
             this.turbolinksAdapter = (TurbolinksAdapter) turbolinksAdapter;
             return this;
@@ -220,7 +220,7 @@ public class Turbolinks {
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks view(TurbolinksView turbolinksView) {
+    public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
         this.turbolinksView.attachWebView(webView);
 
@@ -278,7 +278,7 @@ public class Turbolinks {
      *                         inside the progress view (default is 500 ms).
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks progressView(View progressView, int progressBarResId, int progressBarDelay) {
+    public TurbolinksSession progressView(View progressView, int progressBarResId, int progressBarDelay) {
         this.progressView = progressView;
         this.progressBar = progressView.findViewById(progressBarResId);
         this.progressBarDelay = progressBarDelay;
@@ -299,7 +299,7 @@ public class Turbolinks {
      *                                  scroll position.
      * @return The Turbolinks singleton, to continue the chained calls.
      */
-    public Turbolinks restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+    public TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         this.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
         return this;
     }
@@ -515,14 +515,14 @@ public class Turbolinks {
             TurbolinksHelper.runOnMainThread(context, new Runnable() {
                 @Override
                 public void run() {
-                    TurbolinksLog.d("Turbolinks is ready");
+                    TurbolinksLog.d("TurbolinksSession is ready");
                     visitCurrentLocationWithTurbolinks();
                 }
             });
 
             coldBootInProgress = false;
         } else {
-            TurbolinksLog.d("Turbolinks is not ready. Resetting and throw error.");
+            TurbolinksLog.d("TurbolinksSession is not ready. Resetting and throw error.");
             resetToColdBoot();
             visitRequestFailedWithStatusCode(currentVisitIdentifier, 500);
         }
@@ -683,7 +683,7 @@ public class Turbolinks {
         if (progressView == null) {
             progressView = LayoutInflater.from(activity).inflate(R.layout.turbolinks_progress, turbolinksView, false);
 
-            TurbolinksLog.d("Turbolinks background: " + turbolinksView.getBackground());
+            TurbolinksLog.d("TurbolinksSession background: " + turbolinksView.getBackground());
             progressView.setBackground(turbolinksView.getBackground());
             progressBar = progressView.findViewById(R.id.turbolinks_default_progress_bar);
             progressBarDelay = PROGRESS_BAR_DELAY;
@@ -720,19 +720,19 @@ public class Turbolinks {
      */
     private void validateRequiredParams() {
         if (activity == null) {
-            throw new IllegalArgumentException("Turbolinks.activity(activity) must be called with a non-null object.");
+            throw new IllegalArgumentException("TurbolinksSession.activity(activity) must be called with a non-null object.");
         }
 
         if (turbolinksAdapter == null) {
-            throw new IllegalArgumentException("Turbolinks.adapter(turbolinksAdapter) must be called with a non-null object.");
+            throw new IllegalArgumentException("TurbolinksSession.adapter(turbolinksAdapter) must be called with a non-null object.");
         }
 
         if (turbolinksView == null) {
-            throw new IllegalArgumentException("Turbolinks.view(turbolinksView) must be called with a non-null object.");
+            throw new IllegalArgumentException("TurbolinksSession.view(turbolinksView) must be called with a non-null object.");
         }
 
         if (TextUtils.isEmpty(location)) {
-            throw new IllegalArgumentException("Turbolinks.visit(location) location value must not be null.");
+            throw new IllegalArgumentException("TurbolinksSession.visit(location) location value must not be null.");
         }
     }
 }
