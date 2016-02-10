@@ -104,11 +104,13 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
     // Simply forwards to an error page, but you could alternatively show your own native screen
     // or do whatever other kind of error handling you want.
     private void handleError(int code) {
-        TurbolinksSession.getDefault(this)
-            .activity(this)
-            .adapter(this)
-            .restoreWithCachedSnapshot(false)
-            .view(turbolinksView)
-            .visit(BASE_URL + "/error");
+        if (code == 404) {
+            TurbolinksSession.getDefault(this)
+                .activity(this)
+                .adapter(this)
+                .restoreWithCachedSnapshot(false)
+                .view(turbolinksView)
+                .visit(BASE_URL + "/error");
+        }
     }
 }
