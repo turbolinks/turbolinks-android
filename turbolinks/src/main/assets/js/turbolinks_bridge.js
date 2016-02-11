@@ -63,6 +63,8 @@ TLWebView.prototype = {
     },
 
     visitRequestStarted: function(visit) {
+        // Purposely left unimplemented. visitStarted covers most cases and we'll keep an eye
+        // on whether this is needed in the future
     },
 
     visitRequestCompleted: function(visit) {
@@ -74,6 +76,8 @@ TLWebView.prototype = {
     },
 
     visitRequestFinished: function(visit) {
+        // Purposely left unimplemented. visitRequestCompleted covers most cases and we'll keep
+        // an eye on whether this is needed in the future
     },
 
     visitRendered: function(visit) {

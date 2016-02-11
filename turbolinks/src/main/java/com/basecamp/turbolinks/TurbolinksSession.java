@@ -67,17 +67,14 @@ public class TurbolinksSession {
     /**
      * Private constructor called to return a new Turbolinks instance.
      *
-     * @param applicationContext The application context to initialize a TurbolinksSession. We want
-     *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short
-     *                           lived context, like an activity, would cause a leak.
+     * @param context Any Android context.
      */
-    private TurbolinksSession(final Context applicationContext) {
-        if (applicationContext == null) {
+    private TurbolinksSession(final Context context) {
+        if (context == null) {
             throw new IllegalArgumentException("Context must not be null.");
         }
 
-        this.applicationContext = applicationContext;
+        this.applicationContext = context.getApplicationContext();
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
@@ -151,34 +148,28 @@ public class TurbolinksSession {
      * Creates a brand new TurbolinksSession that the calling application will be responsible for
      * managing.
      *
-     * @param applicationContext The application context to initialize a TurbolinksSession. We want
-     *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short
-     *                           lived context, like an activity, would cause a leak.
+     * @param context Any Android context.
      * @return TurbolinksSession to be managed by the calling application.
      */
-    public static TurbolinksSession getNew(Context applicationContext) {
+    public static TurbolinksSession getNew(Context context) {
         TurbolinksLog.d("TurbolinksSession getNew called");
 
-        return new TurbolinksSession(applicationContext);
+        return new TurbolinksSession(context);
     }
 
     /**
      * Convenience method that returns a default TurbolinksSession. This is useful for when an
      * app only needs one instance of a TurbolinksSession.
      *
-     * @param applicationContext The application context to initialize a TurbolinksSession. We want
-     *                           this to be an application context since long-running objects,
-     *                           like the shared WebView, will be created using it. Passing a short
-     *                           lived context, like an activity, would cause a leak.
+     * @param context Any Android context.
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
-    public static TurbolinksSession getDefault(Context applicationContext) {
+    public static TurbolinksSession getDefault(Context context) {
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
                     TurbolinksLog.d("Default instance is null, creating new");
-                    defaultInstance = TurbolinksSession.getNew(applicationContext);
+                    defaultInstance = TurbolinksSession.getNew(context);
                 }
             }
         }
@@ -226,13 +217,9 @@ public class TurbolinksSession {
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession adapter(Object turbolinksAdapter) {
-        if (turbolinksAdapter instanceof TurbolinksAdapter) {
-            this.turbolinksAdapter = (TurbolinksAdapter) turbolinksAdapter;
-            return this;
-        } else {
-            throw new IllegalArgumentException("Class passed as adapter does not implement TurbolinksAdapter interface.");
-        }
+    public TurbolinksSession adapter(TurbolinksAdapter turbolinksAdapter) {
+        this.turbolinksAdapter = turbolinksAdapter;
+        return this;
     }
 
     /**
@@ -294,10 +281,10 @@ public class TurbolinksSession {
      * out of the box. This allows you to customize how you want the progress view to look while
      * pages are loading.</p>
      *
-     * @param progressView     A custom progressView object.
+     * @param progressView           A custom progressView object.
      * @param progressIndicatorResId The resource ID of a progressIndicator object inside the progressView.
      * @param progressIndicatorDelay The delay, in milliseconds, before the progress indicator should be displayed
-     *                         inside the progress view (default is 500 ms).
+     *                               inside the progress view (default is 500 ms).
      * @return The TurbolinksSession to continue the chained calls.
      */
     public TurbolinksSession progressView(View progressView, int progressIndicatorResId, int progressIndicatorDelay) {
@@ -730,9 +717,8 @@ public class TurbolinksSession {
     }
 
     /**
-     * <p>Ensures all required chained calls/parameters ({@link #activity},
-     * {@link #adapter(Object)}, {@link #turbolinksView}, and location}) are
-     * set before calling {@link #visit(String)}.</p>
+     * <p>Ensures all required chained calls/parameters ({@link #activity}, {@link #turbolinksView},
+     * and location}) are set before calling {@link #visit(String)}.</p>
      */
     private void validateRequiredParams() {
         if (activity == null) {

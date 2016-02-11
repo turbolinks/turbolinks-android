@@ -208,7 +208,7 @@ settings.setDomStorageEnabled(false);
 settings.setAllowFileAccess(false);
 ```
 
-**If you do update the WebView settings, be sure not to override `setJavaScriptEnabled(false)`. Doing so would break links to required JavascriptInterface objects that the library depends on.**
+**If you do update the WebView settings, be sure not to override `setJavaScriptEnabled(false)`. Doing so would break Turbolinks, which relies heavily on Javascript.**
 
 ### Custom JavascriptInterfaces
 

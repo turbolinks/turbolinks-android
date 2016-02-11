@@ -30,11 +30,11 @@ class TurbolinksHelper {
     /**
      * <p>Creates the shared webView used throughout the lifetime of the TurbolinksSession.</p>
      *
-     * @param context Any Android context.
+     * @param applicationContext An application context.
      * @return The shared WebView.
      */
-    static WebView createWebView(Context context) {
-        MutableContextWrapper contextWrapper = new MutableContextWrapper(context.getApplicationContext());
+    static WebView createWebView(Context applicationContext) {
+        MutableContextWrapper contextWrapper = new MutableContextWrapper(applicationContext);
         WebView webView = new WebView(contextWrapper);
         configureWebViewDefaults(webView);
 

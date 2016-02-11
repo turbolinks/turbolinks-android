@@ -12,7 +12,7 @@ import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 /**
- * The custom view to be implemented in your layout.
+ * <p>The custom view to add to your activity layout.</p>
  */
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
