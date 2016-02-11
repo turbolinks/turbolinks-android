@@ -43,7 +43,7 @@ This library hasn't been tested with Android Fragments (we don't use them). We'd
 
 In your activity's layout, insert the `TurbolinksView` custom view.
 
-`TurbolinksView` extends `FrameLayout`, so all if its standard attributes are available to you.
+`TurbolinksView` extends `FrameLayout`, so all of its standard attributes are available to you.
 
 ```xml
 <LinearLayout
