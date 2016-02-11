@@ -5,7 +5,3 @@
 
 .idea/*
 *.iml
-*.js
-
-# Exceptions
-!turbolinks.js

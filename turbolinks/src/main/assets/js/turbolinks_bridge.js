@@ -3,16 +3,21 @@ function TLWebView(controller) {
     controller.adapter = this
 
     var turbolinksIsReady = typeof Turbolinks !== "undefined" && Turbolinks !== null
-    TLNativeBridge.setTurbolinksIsReady(turbolinksIsReady);
-    TLNativeBridge.setFirstRestorationIdentifier(this.controller.restorationIdentifier);
+    TurbolinksNative.setTurbolinksIsReady(turbolinksIsReady);
 }
 
 TLWebView.prototype = {
-    // Current visit
+    // -----------------------------------------------------------------------
+    // Starting point
+    // -----------------------------------------------------------------------
 
     visitLocationWithActionAndRestorationIdentifier: function(location, action, restorationIdentifier) {
         this.controller.startVisitToLocationWithAction(location, action, restorationIdentifier)
     },
+
+    // -----------------------------------------------------------------------
+    // Current visit
+    // -----------------------------------------------------------------------
 
     issueRequestForVisitWithIdentifier: function(identifier) {
         if (identifier == this.currentVisit.identifier) {
@@ -26,9 +31,9 @@ TLWebView.prototype = {
         }
     },
 
-    restoreSnapshotForVisitWithIdentifier: function(identifier) {
+    loadCachedSnapshotForVisitWithIdentifier: function(identifier) {
         if (identifier == this.currentVisit.identifier) {
-            this.currentVisit.restoreSnapshot()
+            this.currentVisit.loadCachedSnapshot()
         }
     },
 
@@ -44,52 +49,54 @@ TLWebView.prototype = {
         }
     },
 
+    // -----------------------------------------------------------------------
     // Adapter
+    // -----------------------------------------------------------------------
 
     visitProposedToLocationWithAction: function(location, action) {
-        TLNativeBridge.visitProposedToLocationWithAction(location.absoluteURL, action);
+        TurbolinksNative.visitProposedToLocationWithAction(location.absoluteURL, action);
     },
 
     visitStarted: function(visit) {
         this.currentVisit = visit
-        TLNativeBridge.visitStarted(visit.identifier, visit.hasSnapshot());
+        TurbolinksNative.visitStarted(visit.identifier, visit.hasCachedSnapshot());
     },
 
     visitRequestStarted: function(visit) {
+        // Purposely left unimplemented. visitStarted covers most cases and we'll keep an eye
+        // on whether this is needed in the future
     },
 
     visitRequestCompleted: function(visit) {
-        TLNativeBridge.visitRequestCompleted(visit.identifier);
+        TurbolinksNative.visitRequestCompleted(visit.identifier);
     },
 
     visitRequestFailedWithStatusCode: function(visit, statusCode) {
-        TLNativeBridge.visitRequestFailedWithStatusCode(visit.identifier, statusCode);
+        TurbolinksNative.visitRequestFailedWithStatusCode(visit.identifier, statusCode);
     },
 
     visitRequestFinished: function(visit) {
+        // Purposely left unimplemented. visitRequestCompleted covers most cases and we'll keep
+        // an eye on whether this is needed in the future
     },
 
-    visitSnapshotRestored: function(visit) {
+    visitRendered: function(visit) {
         this.afterNextRepaint(function() {
-            TLNativeBridge.visitSnapshotRestored(visit.identifier)
-        })
-    },
-
-    visitResponseLoaded: function(visit) {
-        this.afterNextRepaint(function() {
-            TLNativeBridge.visitResponseLoaded(visit.identifier)
+            TurbolinksNative.visitRendered(visit.identifier)
         })
     },
 
     visitCompleted: function(visit) {
-        TLNativeBridge.visitCompleted(visit.identifier, visit.restorationIdentifier)
+        TurbolinksNative.visitCompleted(visit.identifier, visit.restorationIdentifier)
     },
 
     pageInvalidated: function() {
-        TLNativeBridge.pageInvalidated()
+        TurbolinksNative.pageInvalidated()
     },
 
+    // -----------------------------------------------------------------------
     // Private
+    // -----------------------------------------------------------------------
 
     afterNextRepaint: function(callback) {
       requestAnimationFrame(function() {
@@ -101,5 +108,5 @@ TLWebView.prototype = {
 try {
     window.webView = new TLWebView(Turbolinks.controller)
 } catch (e) { // Most likely reached a page where Turbolinks.controller returned "Uncaught ReferenceError: Turbolinks is not defined"
-    TLNativeBridge.turbolinksDoesNotExist()
+    TurbolinksNative.turbolinksDoesNotExist()
 }

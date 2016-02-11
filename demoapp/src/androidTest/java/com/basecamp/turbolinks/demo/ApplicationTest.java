@@ -1,4 +1,4 @@
-package com.basecamp.turbolinks;
+package com.basecamp.turbolinks.demo;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
