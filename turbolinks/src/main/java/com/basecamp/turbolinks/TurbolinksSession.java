@@ -34,7 +34,7 @@ public class TurbolinksSession {
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
-    int progressBarDelay;
+    int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
     HashMap<String, Object> javascriptInterfaces = new HashMap<>();
@@ -44,7 +44,7 @@ public class TurbolinksSession {
     TurbolinksAdapter turbolinksAdapter;
     TurbolinksView turbolinksView;
     View progressView;
-    View progressBar;
+    View progressIndicator;
 
     static volatile TurbolinksSession defaultInstance;
 
@@ -55,7 +55,7 @@ public class TurbolinksSession {
     static final String ACTION_ADVANCE = "advance";
     static final String ACTION_RESTORE = "restore";
     static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
-    static final int PROGRESS_BAR_DELAY = 500;
+    static final int PROGRESS_INDICATOR_DELAY = 500;
 
     final Context applicationContext;
     final WebView webView;
@@ -290,23 +290,23 @@ public class TurbolinksSession {
     // ---------------------------------------------------
 
     /**
-     * <p><b>Optional</b> This will override the default progress view/progress bar that's provided
+     * <p><b>Optional</b> This will override the default progress view/progress indicator that's provided
      * out of the box. This allows you to customize how you want the progress view to look while
      * pages are loading.</p>
      *
      * @param progressView     A custom progressView object.
-     * @param progressBarResId The resource ID of a progressBar object inside the progressView.
-     * @param progressBarDelay The delay, in milliseconds, before the progress bar should be displayed
+     * @param progressIndicatorResId The resource ID of a progressIndicator object inside the progressView.
+     * @param progressIndicatorDelay The delay, in milliseconds, before the progress indicator should be displayed
      *                         inside the progress view (default is 500 ms).
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession progressView(View progressView, int progressBarResId, int progressBarDelay) {
+    public TurbolinksSession progressView(View progressView, int progressIndicatorResId, int progressIndicatorDelay) {
         this.progressView = progressView;
-        this.progressBar = progressView.findViewById(progressBarResId);
-        this.progressBarDelay = progressBarDelay;
+        this.progressIndicator = progressView.findViewById(progressIndicatorResId);
+        this.progressIndicatorDelay = progressIndicatorDelay;
 
-        if (this.progressBar == null) {
-            throw new IllegalArgumentException("A progress bar view must be provided in your custom progressView.");
+        if (this.progressIndicator == null) {
+            throw new IllegalArgumentException("A progress indicator view must be provided in your custom progressView.");
         }
 
         return this;
@@ -701,8 +701,8 @@ public class TurbolinksSession {
 
             TurbolinksLog.d("TurbolinksSession background: " + turbolinksView.getBackground());
             progressView.setBackground(turbolinksView.getBackground());
-            progressBar = progressView.findViewById(R.id.turbolinks_default_progress_bar);
-            progressBarDelay = PROGRESS_BAR_DELAY;
+            progressIndicator = progressView.findViewById(R.id.turbolinks_default_progress_indicator);
+            progressIndicatorDelay = PROGRESS_INDICATOR_DELAY;
 
             Drawable background = turbolinksView.getBackground() != null ? turbolinksView.getBackground() : new ColorDrawable(activity.getResources().getColor(android.R.color.white));
             progressView.setBackground(background);
@@ -713,8 +713,8 @@ public class TurbolinksSession {
             ((ViewGroup) progressView.getParent()).removeView(progressView);
         }
 
-        // Executed from here to account for progress bar delay
-        turbolinksView.showProgressView(progressView, progressBar, progressBarDelay);
+        // Executed from here to account for progress indicator delay
+        turbolinksView.showProgressView(progressView, progressIndicator, progressIndicatorDelay);
     }
 
     /**

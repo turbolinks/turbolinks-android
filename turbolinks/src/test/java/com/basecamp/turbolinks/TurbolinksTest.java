@@ -91,7 +91,7 @@ public class TurbolinksTest extends BaseTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void progressViewWithInvalidProgressBar() {
+    public void progressViewWithInvalidProgressIndicator() {
         turbolinksSession.activity(activity)
             .adapter(adapter)
             .progressView(progressView, 123, 0)

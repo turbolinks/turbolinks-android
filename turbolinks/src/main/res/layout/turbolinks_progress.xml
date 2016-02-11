@@ -4,7 +4,7 @@
              android:layout_height="match_parent">
 
     <ProgressBar
-        android:id="@+id/turbolinks_default_progress_bar"
+        android:id="@+id/turbolinks_default_progress_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>

@@ -70,15 +70,15 @@ public class TurbolinksView extends FrameLayout {
 
     /**
      * <p>Detaches/attaches a progress view on top of the TurbolinksView to indicate the page is
-     * loading. Progress bar is set to a specified delay before displaying -- a very short delay
+     * loading. Progress indicator is set to a specified delay before displaying -- a very short delay
      * (like 500 ms) can improve perceived loading time to the user.</p>
      *
      * @param progressView The progressView to display on top of TurbolinksView.
-     * @param progressBar The progressBar to display in the view.
-     * @param delay The delay before showing the progressBar in the view. The default progress view
+     * @param progressIndicator The progressIndicator to display in the view.
+     * @param delay The delay before showing the progressIndicator in the view. The default progress view
      *              is 500 ms.
      */
-    void showProgressView(final View progressView, final View progressBar, int delay) {
+    void showProgressView(final View progressView, final View progressIndicator, int delay) {
         TurbolinksLog.d("showProgressView called");
 
         removeProgressView();
@@ -87,13 +87,13 @@ public class TurbolinksView extends FrameLayout {
         progressView.setClickable(true);
         addView(progressView);
 
-        progressBar.setVisibility(View.GONE);
+        progressIndicator.setVisibility(View.GONE);
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                progressBar.setVisibility(View.VISIBLE);
+                progressIndicator.setVisibility(View.VISIBLE);
             }
         }, delay);
     }
