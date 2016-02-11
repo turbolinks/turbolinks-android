@@ -17,7 +17,7 @@ import static org.mockito.Matchers.any;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = TestBuildConfig.class)
-public class TurbolinksTest extends BaseTest {
+public class TurbolinkSessionTest extends BaseTest {
     @Mock Activity activity;
     @Mock TurbolinksAdapter adapter;
     @Mock TurbolinksView view;
@@ -78,14 +78,6 @@ public class TurbolinksTest extends BaseTest {
     @Test(expected = IllegalArgumentException.class)
     public void adapterNotProvided() {
         turbolinksSession.activity(activity)
-            .view(view)
-            .visit(LOCATION);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void adapterInterfaceNotImplemented() {
-        turbolinksSession.activity(activity)
-            .adapter(new Object())
             .view(view)
             .visit(LOCATION);
     }

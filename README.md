@@ -277,23 +277,7 @@ The .aar's will be built at `<project-root>/turbolinks/build/outputs/aar`.
 
 ### Running Tests
 
-**From Android Studio:**
-
-- Open the [project's Gradle file](build.gradle).
-- In the menu, choose Build --> Select Build Variant. Select Unit Tests as the test artifact.
-- In the menu, choose Run --> Edit Configurations.
-  - Click the plus icon in the upper left to add a new configuration. Choose JUnit as the type and the build variant (debug or release) you want to test.
-  - Name: Turbolinks Unit Tests
-  - Test kind: All in package
-  - Directory: `com.basecamp.turbolinks`
-  - VM options: `-ea`
-  - Working directory: `$MODULE_DIR$`
-  - Use classpath of module: `turbolinks`
-  - Click Apply
-- Select the new configuration you just created.
-- In the menu, choose Run --> Run <configuration-name>.
-
 **From command line:**
 
 - Change directories to the project's root directory.
-- Run `./gradlew clean test --continue -p turbolinks`
+- Run `./gradlew clean testRelease -p turbolinks`
