@@ -95,13 +95,16 @@ public class TurbolinksSession {
 
             /**
              * Turbolinks will not call adapter.visitProposedToLocationWithAction in some cases,
-             * like target=_blank or when the domain doesn't match. We still route those here. This
-             * is only called when links within a webView are clicked and not during loadUrl. So
-             * this is safely ignored for the first cold boot.
-             * http://stackoverflow.com/a/6739042/3280911
+             * like target=_blank or when the domain doesn't match. We still route those here. A
+             * redirect on a cold boot can also cause this to fire, so don't override in that
+             * situation. http://stackoverflow.com/a/6739042/3280911
              */
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String location) {
+                if (!turbolinksIsReady || coldBootInProgress) {
+                    return false;
+                }
+
                 /**
                  * Prevents firing twice in a row within a few milliseconds of each other, which
                  * happens. So we check for a slight delay between requests, which is plenty of time
