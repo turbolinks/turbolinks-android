@@ -8,7 +8,7 @@ Our goal for this library was that it'd be easy on our fellow programmers:
 
 - **Easy to start**: one jCenter dependency, one custom view, one adapter interface to implement. No other requirements.
 - **Easy to use**: full access to the TurbolinksSession, along with a convenience default instance.
-- **Easy to understand**: tidy code backed by solid documentation via [Javadocs](http://basecamp.github.io/turbolinks-android/javadoc/) and this README.
+- **Easy to understand**: tidy code backed by solid documentation via [Javadocs](http://turbolinks.github.io/turbolinks-android/javadoc/) and this README.
 
 ## Contents
 
@@ -67,7 +67,7 @@ Right off the bat, you don't need to worry about handling every callback, especi
 
 **But at the very minimum, you must handle the [visitProposedToLocationWithAction](#visitproposedtolocationwithaction)**. Otherwise your app won't know what to do when a link is clicked inside a WebView.
 
-Beyond this README, you can get a good feel for the callbacks from the [Javadoc](http://basecamp.github.io/turbolinks-android/javadoc/) and the [demo app](/demoapp).
+Beyond this README, you can get a good feel for the callbacks from the [Javadoc](http://turbolinks.github.io/turbolinks-android/javadoc/) and the [demo app](/demoapp).
 
 ### 3. Get the Default TurbolinksSession and Visit a Location
 
