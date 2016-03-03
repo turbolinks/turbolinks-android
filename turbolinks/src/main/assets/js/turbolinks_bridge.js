@@ -53,8 +53,8 @@ TLWebView.prototype = {
     // Adapter
     // -----------------------------------------------------------------------
 
-    visitProposedToLocationWithAction: function(location, action) {
-        TurbolinksNative.visitProposedToLocationWithAction(location.absoluteURL, action);
+    visitProposedToLocationWithAction: function(location, action, target) {
+        TurbolinksNative.visitProposedToLocationWithAction(location.absoluteURL, action, target.outerHTML);
     },
 
     visitStarted: function(visit) {

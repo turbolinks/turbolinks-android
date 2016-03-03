@@ -46,5 +46,5 @@ public interface TurbolinksAdapter {
      * @param location URL to be visited.
      * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
-    void visitProposedToLocationWithAction(String location, String action);
+    void visitProposedToLocationWithAction(String location, String action, String target);
 }

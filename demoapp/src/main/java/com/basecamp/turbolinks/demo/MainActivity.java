@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements TurbolinksAdapter
     // you can just open another activity, or in more complex cases, this would be a good spot for
     // routing logic to take you to the right place within your app.
     @Override
-    public void visitProposedToLocationWithAction(String location, String action) {
+    public void visitProposedToLocationWithAction(String location, String action, String target) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(INTENT_URL, location);
 

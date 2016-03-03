@@ -116,7 +116,7 @@ public class TurbolinksSession {
                 if ((currentOverrideTime - previousOverrideTime) > 500) {
                     previousOverrideTime = currentOverrideTime;
                     TurbolinksLog.d("Overriding load: " + location);
-                    visitProposedToLocationWithAction(location, ACTION_ADVANCE);
+                    visitProposedToLocationWithAction(location, ACTION_ADVANCE, null);
                 }
 
                 return true;
@@ -334,10 +334,10 @@ public class TurbolinksSession {
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
-    public void visitProposedToLocationWithAction(String location, String action) {
+    public void visitProposedToLocationWithAction(String location, String action, String target) {
         TurbolinksLog.d("visitProposedToLocationWithAction called");
 
-        turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+        turbolinksAdapter.visitProposedToLocationWithAction(location, action, target);
     }
 
     /**
