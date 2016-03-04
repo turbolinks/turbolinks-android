@@ -114,9 +114,9 @@ public class TurbolinkSessionTest extends BaseTest {
     public void visitProposedToLocationWithActionCallsAdapter() {
         turbolinksSession.activity(activity)
             .adapter(adapter);
-        turbolinksSession.visitProposedToLocationWithAction(LOCATION, TurbolinksSession.ACTION_ADVANCE);
+        turbolinksSession.visitProposedToLocationWithAction(LOCATION, TurbolinksSession.ACTION_ADVANCE, "<a href='/' />");
 
-        verify(adapter).visitProposedToLocationWithAction(any(String.class), any(String.class));
+        verify(adapter).visitProposedToLocationWithAction(any(String.class), any(String.class), any(String.class));
     }
 
     @Test
