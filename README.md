@@ -255,9 +255,9 @@ You should see a message saying what port the demo web app is running on. It usu
 
 ## Contributing
 
-Turbolinks Android is open-source software, freely distributable under the terms of an [MIT-style license](LICENSE). The [source code is hosted on GitHub](https://github.com/basecamp/turbolinks-android).
+Turbolinks Android is open-source software, freely distributable under the terms of an [MIT-style license](LICENSE). The [source code is hosted on GitHub](https://github.com/turbolinks/turbolinks-android).
 
-We welcome contributions in the form of bug reports, pull requests, or thoughtful discussions in the [GitHub issue tracker](https://github.com/basecamp/turbolinks-android/issues). Please see the [Code of Conduct](CONDUCT.md) for our pledge to contributors.
+We welcome contributions in the form of bug reports, pull requests, or thoughtful discussions in the [GitHub issue tracker](https://github.com/turbolinks/turbolinks-android/issues). Please see the [Code of Conduct](CONDUCT.md) for our pledge to contributors.
 
 Turbolinks Android was created by [Dan Kim](https://twitter.com/dankim) and [Jay Ohms](https://twitter.com/jayohms), with guidance and help from [Sam Stephenson](https://twitter.com/sstephenson) and [Jeffrey Hardy](https://twitter.com/packagethief). Development is sponsored by [Basecamp](https://basecamp.com/).
 
