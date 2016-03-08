@@ -220,6 +220,21 @@ TurbolinksSession.getDefault().addJavascriptInterface(this, "MyCustomJavascriptI
 
 The Java object being passed in can be anything, as long as it has at least one method annotated with `@android.webkit.JavascriptInterface`. Names of interfaces must be unique, or they will be overwritten in the library's map.
 
+### Custom Javascript Files
+
+You can also inject custom Javascript when the page finishes loading. This is useful when adding handlers for Javascript events, such as `turbolinks:request-start`.
+
+For example, you can add `custom.js` to `assets/js/custom.js` and inject it in your `TurbolinksAdapter` implementation.
+
+```java
+@Override
+public void onPageFinished() {
+    TurbolinksSession session = TurbolinksSession.getDefault(activity);
+    WebView webView = session.getWebView();
+    TurbolinksJavascriptInjector.injectJavascript(session, this, webView, "js/custom.js");
+}
+```
+
 ## Running the Demo App
 
 A demo app is bundled with the library, and works in two parts:

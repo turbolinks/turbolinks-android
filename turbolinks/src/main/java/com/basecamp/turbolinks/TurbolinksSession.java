@@ -86,7 +86,7 @@ public class TurbolinksSession {
             @Override
             public void onPageFinished(WebView view, String location) {
                 if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
+                    TurbolinksJavascriptInjector.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
                     turbolinksAdapter.onPageFinished();
 
                     TurbolinksLog.d("Page finished: " + location);
