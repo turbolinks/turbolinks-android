@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -84,13 +85,26 @@ public class TurbolinksSession {
             }
 
             @Override
-            public void onPageFinished(WebView view, String location) {
-                if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
-                    turbolinksAdapter.onPageFinished();
+            public void onPageFinished(WebView view, final String location) {
+                String jsCall = "window.webView != null";
 
-                    TurbolinksLog.d("Page finished: " + location);
-                }
+                TurbolinksLog.d("onPageFinished");
+
+                webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        boolean webViewExists = Boolean.parseBoolean(s);
+                        TurbolinksLog.d("Javascript webView exists: " + webViewExists);
+
+                        if (!webViewExists) {
+                            TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
+                            turbolinksAdapter.onPageFinished();
+
+                            TurbolinksLog.d("Page finished: " + location);
+                        }
+                    }
+                });
+
             }
 
             /**
