@@ -90,14 +90,12 @@ public class TurbolinksSession {
                 webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String s) {
-                        if (Boolean.parseBoolean(s)) {
-                            if (!bridgeInjectionInProgress) {
-                                bridgeInjectionInProgress = true;
-                                TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
-                                TurbolinksLog.d("Bridge injected");
+                        if (Boolean.parseBoolean(s) && !bridgeInjectionInProgress) {
+                            bridgeInjectionInProgress = true;
+                            TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
+                            TurbolinksLog.d("Bridge injected");
 
-                                turbolinksAdapter.onPageFinished();
-                            }
+                            turbolinksAdapter.onPageFinished();
                         }
                     }
                 });
