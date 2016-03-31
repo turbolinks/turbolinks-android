@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -30,7 +31,7 @@ public class TurbolinksSession {
     // Package public vars (allows for greater flexibility and access for testing)
     // ---------------------------------------------------
 
-    boolean turbolinksBridgeInjected; // Script injected into DOM
+    boolean bridgeInjectionInProgress; // Ensures the bridge is only injected once
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
@@ -84,13 +85,20 @@ public class TurbolinksSession {
             }
 
             @Override
-            public void onPageFinished(WebView view, String location) {
-                if (!turbolinksBridgeInjected) {
-                    TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
-                    turbolinksAdapter.onPageFinished();
+            public void onPageFinished(WebView view, final String location) {
+                String jsCall = "window.webView == null";
+                webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        if (Boolean.parseBoolean(s) && !bridgeInjectionInProgress) {
+                            bridgeInjectionInProgress = true;
+                            TurbolinksHelper.injectTurbolinksBridge(TurbolinksSession.this, applicationContext, webView);
+                            TurbolinksLog.d("Bridge injected");
 
-                    TurbolinksLog.d("Page finished: " + location);
-                }
+                            turbolinksAdapter.onPageFinished();
+                        }
+                    }
+                });
             }
 
             /**
@@ -520,6 +528,8 @@ public class TurbolinksSession {
         this.turbolinksIsReady = turbolinksIsReady;
 
         if (turbolinksIsReady) {
+            bridgeInjectionInProgress = false;
+
             TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
                 @Override
                 public void run() {
@@ -604,7 +614,7 @@ public class TurbolinksSession {
      * on the next Turbolinks visit.</p>
      */
     public void resetToColdBoot() {
-        turbolinksBridgeInjected = false;
+        bridgeInjectionInProgress = false;
         turbolinksIsReady = false;
         coldBootInProgress = false;
     }

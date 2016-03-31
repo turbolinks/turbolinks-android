@@ -231,12 +231,12 @@ public class TurbolinkSessionTest extends BaseTest {
     public void resetToColdBoot() {
         turbolinksSession.activity(activity)
             .adapter(adapter);
-        turbolinksSession.turbolinksBridgeInjected = true;
+        turbolinksSession.bridgeInjectionInProgress = true;
         turbolinksSession.turbolinksIsReady = true;
         turbolinksSession.coldBootInProgress = false;
         turbolinksSession.resetToColdBoot();
 
-        assertThat(turbolinksSession.turbolinksBridgeInjected).isFalse();
+        assertThat(turbolinksSession.bridgeInjectionInProgress).isFalse();
         assertThat(turbolinksSession.turbolinksIsReady).isFalse();
         assertThat(turbolinksSession.coldBootInProgress).isFalse();
     }

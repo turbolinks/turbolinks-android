@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.MutableContextWrapper;
 import android.os.Handler;
 import android.util.Base64;
-import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -83,17 +82,8 @@ class TurbolinksHelper {
      */
     static void injectTurbolinksBridge(final TurbolinksSession turbolinksSession, Context context, WebView webView) {
         try {
-            String script = TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js");
-            String jsCall = String.format(scriptInjectionFormat, script);
-
-            webView.evaluateJavascript(jsCall, new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String s) {
-                    if (turbolinksSession != null) {
-                        turbolinksSession.turbolinksBridgeInjected = Boolean.parseBoolean(s);
-                    }
-                }
-            });
+            String jsCall = String.format(scriptInjectionFormat, TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js"));
+            runJavascriptRaw(context, webView, jsCall);
         } catch (IOException e) {
             TurbolinksLog.e("Error injecting script file into webview: " + e.toString());
         }

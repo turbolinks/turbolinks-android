@@ -50,7 +50,7 @@ ext {
 
     libraryName = 'Turbolinks Android'
     libraryDescription = 'Turbolinks for Android'
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.0.1-beta'
 
     siteUrl = 'https://github.com/basecamp/turbolinks-android'
     gitUrl = 'https://github.com/basecamp/turbolinks-android.git'
