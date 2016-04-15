@@ -728,7 +728,7 @@ public class TurbolinksSession {
         TurbolinksLog.d("Visiting current stored location: " + location);
 
         String action = restoreWithCachedSnapshot ? ACTION_RESTORE : ACTION_ADVANCE;
-        visitLocationWithAction(TurbolinksHelper.encodeUrl(location), action);
+        visitLocationWithAction(location, action);
     }
 
     /**
