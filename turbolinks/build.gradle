@@ -19,8 +19,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 3
-        versionName "1.0.1"
+        versionCode 4
+        versionName "1.0.2"
     }
     buildTypes {
         release {
@@ -50,7 +50,7 @@ ext {
 
     libraryName = 'Turbolinks Android'
     libraryDescription = 'Turbolinks for Android'
-    libraryVersion = '1.0.1'
+    libraryVersion = '1.0.2'
 
     siteUrl = 'https://github.com/basecamp/turbolinks-android'
     gitUrl = 'https://github.com/basecamp/turbolinks-android.git'
