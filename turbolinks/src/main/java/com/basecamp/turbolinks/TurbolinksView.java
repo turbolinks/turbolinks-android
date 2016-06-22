@@ -74,8 +74,11 @@ public class TurbolinksView extends FrameLayout {
     // ---------------------------------------------------
 
     /**
-     * <p>Detaches/attaches a progress view on top of the TurbolinksView to indicate the page is
-     * loading. Progress indicator is set to a specified delay before displaying -- a very short delay
+     * <p>Shows a progress view or a generated screenshot of the webview content (if available)
+     * on top of the webview. When advancing to a new url, this indicates that the page is still
+     * loading. When resuming an activity in the navigation stack, a screenshot is displayed while the
+     * webview is restoring its snapshot.</p>
+     * <p>Progress indicator is set to a specified delay before displaying -- a very short delay
      * (like 500 ms) can improve perceived loading time to the user.</p>
      *
      * @param progressView The progressView to display on top of TurbolinksView.
@@ -83,13 +86,13 @@ public class TurbolinksView extends FrameLayout {
      * @param delay The delay before showing the progressIndicator in the view. The default progress view
      *              is 500 ms.
      */
-    void showProgressView(final View progressView, final View progressIndicator, int delay) {
-        TurbolinksLog.d("showProgressView called");
+    void showProgress(final View progressView, final View progressIndicator, int delay) {
+        TurbolinksLog.d("showProgress called");
 
         // Don't show the progress view if a screenshot is available
         if (screenshotView != null) return;
 
-        removeProgressView();
+        hideProgress();
 
         this.progressView = progressView;
         progressView.setClickable(true);
@@ -107,10 +110,10 @@ public class TurbolinksView extends FrameLayout {
     }
 
     /**
-     * <p>Removes the progressView from the TurbolinksView. Ensures no exceptions are thrown where
-     * the progressView is already attached to another view.</p>
+     * <p>Removes the progress view and/or screenshot from the TurbolinksView, so the webview is
+     * visible underneath.</p>
      */
-    void removeProgressView() {
+    void hideProgress() {
         if (progressView != null) {
             removeView(progressView);
         }

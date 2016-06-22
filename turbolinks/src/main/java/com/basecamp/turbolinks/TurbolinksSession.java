@@ -505,7 +505,7 @@ public class TurbolinksSession {
                  */
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
-                    turbolinksView.removeProgressView();
+                    turbolinksView.hideProgress();
                     progressView = null;
                 }
             }
@@ -561,7 +561,7 @@ public class TurbolinksSession {
             public void run() {
                 TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
                 resetToColdBoot();
-                turbolinksView.removeProgressView();
+                turbolinksView.hideProgress();
             }
         });
     }
@@ -716,7 +716,7 @@ public class TurbolinksSession {
         }
 
         // Executed from here to account for progress indicator delay
-        turbolinksView.showProgressView(progressView, progressIndicator, progressIndicatorDelay);
+        turbolinksView.showProgress(progressView, progressIndicator, progressIndicatorDelay);
     }
 
     /**
