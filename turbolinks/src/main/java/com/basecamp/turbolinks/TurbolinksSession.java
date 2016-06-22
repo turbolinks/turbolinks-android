@@ -35,6 +35,7 @@ public class TurbolinksSession {
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
+    boolean screenshotsEnabled;
     int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
@@ -76,6 +77,7 @@ public class TurbolinksSession {
         }
 
         this.applicationContext = context.getApplicationContext();
+        this.screenshotsEnabled = true;
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
@@ -245,7 +247,7 @@ public class TurbolinksSession {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView);
+        this.turbolinksView.attachWebView(webView, screenshotsEnabled);
 
         return this;
     }
@@ -645,6 +647,16 @@ public class TurbolinksSession {
      */
     public void setDebugLoggingEnabled(boolean enabled) {
         TurbolinksLog.setDebugLoggingEnabled(enabled);
+    }
+
+    /**
+     * <p>Determines whether screenshots are displayed (instead of a progress view) when resuming
+     * an activity. Default is true.</p>
+     *
+     * @param enabled If true automatic screenshotting is enabled.
+     */
+    public void setScreenshotsEnabled(boolean enabled) {
+        screenshotsEnabled = enabled;
     }
 
     /**

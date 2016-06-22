@@ -129,11 +129,12 @@ public class TurbolinksView extends FrameLayout {
      * <p>Attach the shared webView to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
+     * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
-    void attachWebView(WebView webView) {
+    void attachWebView(WebView webView, boolean screenshotsEnabled) {
         ViewGroup parent = (ViewGroup) webView.getParent();
         if (parent != null && parent instanceof TurbolinksView) {
-            ((TurbolinksView) parent).screenshotView();
+            if (screenshotsEnabled) ((TurbolinksView) parent).screenshotView();
             parent.removeView(webView);
         }
 
