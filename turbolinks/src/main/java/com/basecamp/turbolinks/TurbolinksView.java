@@ -1,7 +1,10 @@
 package com.basecamp.turbolinks;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Handler;
@@ -10,12 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 /**
  * <p>The custom view to add to your activity layout.</p>
  */
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
+    private ImageView screenshotView = null;
 
     // ---------------------------------------------------
     // Constructors
@@ -81,6 +86,9 @@ public class TurbolinksView extends FrameLayout {
     void showProgressView(final View progressView, final View progressIndicator, int delay) {
         TurbolinksLog.d("showProgressView called");
 
+        // Don't show the progress view if a screenshot is available
+        if (screenshotView != null) return;
+
         removeProgressView();
 
         this.progressView = progressView;
@@ -103,7 +111,15 @@ public class TurbolinksView extends FrameLayout {
      * the progressView is already attached to another view.</p>
      */
     void removeProgressView() {
-        removeView(progressView);
+        if (progressView != null) {
+            removeView(progressView);
+        }
+
+        if (screenshotView != null) {
+            removeView(screenshotView);
+            screenshotView = null;
+            TurbolinksLog.d("Screenshot removed");
+        }
     }
 
     /**
@@ -113,7 +129,8 @@ public class TurbolinksView extends FrameLayout {
      */
     void attachWebView(WebView webView) {
         ViewGroup parent = (ViewGroup) webView.getParent();
-        if (parent != null) {
+        if (parent != null && parent instanceof TurbolinksView) {
+            ((TurbolinksView) parent).screenshotView();
             parent.removeView(webView);
         }
 
@@ -123,5 +140,37 @@ public class TurbolinksView extends FrameLayout {
         }
 
         addView(webView, 0);
+    }
+
+    /**
+     * <p>Creates a screenshot of the current webview content and makes it the top visible view.</p>
+     */
+    private void screenshotView() {
+        // Only take a screenshot if the activity is not finishing
+        if (getContext() instanceof Activity && ((Activity) getContext()).isFinishing()) return;
+
+        Bitmap screenshot = getScreenshotBitmap();
+        if (screenshot == null) return;
+
+        screenshotView = new ImageView(getContext());
+        screenshotView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        screenshotView.setClickable(true);
+        screenshotView.setImageBitmap(screenshot);
+
+        addView(screenshotView);
+
+        TurbolinksLog.d("Screenshot taken");
+    }
+
+    /**
+     * <p>Creates a bitmap screenshot of the webview contents from the canvas.</p>
+     * @return The screenshot of the webview contents.
+     */
+    private Bitmap getScreenshotBitmap() {
+        if (getWidth() <= 0 || getHeight() <= 0) return null;
+
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        draw(new Canvas(bitmap));
+        return bitmap;
     }
 }
