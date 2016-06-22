@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -21,6 +20,7 @@ import android.widget.ImageView;
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
     private ImageView screenshotView = null;
+    private int screenshotOrientation = 0;
 
     // ---------------------------------------------------
     // Constructors
@@ -90,7 +90,7 @@ public class TurbolinksView extends FrameLayout {
         TurbolinksLog.d("showProgress called");
 
         // Don't show the progress view if a screenshot is available
-        if (screenshotView != null) return;
+        if (screenshotView != null && screenshotOrientation == getOrientation()) return;
 
         hideProgress();
 
@@ -114,15 +114,8 @@ public class TurbolinksView extends FrameLayout {
      * visible underneath.</p>
      */
     void hideProgress() {
-        if (progressView != null) {
-            removeView(progressView);
-        }
-
-        if (screenshotView != null) {
-            removeView(screenshotView);
-            screenshotView = null;
-            TurbolinksLog.d("Screenshot removed");
-        }
+        removeProgressView();
+        removeScreenshotView();
     }
 
     /**
@@ -132,9 +125,9 @@ public class TurbolinksView extends FrameLayout {
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
     void attachWebView(WebView webView, boolean screenshotsEnabled) {
-        ViewGroup parent = (ViewGroup) webView.getParent();
-        if (parent != null && parent instanceof TurbolinksView) {
-            if (screenshotsEnabled) ((TurbolinksView) parent).screenshotView();
+        if (webView.getParent() instanceof TurbolinksView) {
+            TurbolinksView parent = (TurbolinksView) webView.getParent();
+            if (screenshotsEnabled) parent.screenshotView();
             parent.removeView(webView);
         }
 
@@ -144,6 +137,27 @@ public class TurbolinksView extends FrameLayout {
         }
 
         addView(webView, 0);
+    }
+
+    /**
+     * Removes the progress view as a child of TurbolinksView
+     */
+    private void removeProgressView() {
+        if (progressView == null) return;
+
+        removeView(progressView);
+        TurbolinksLog.d("Progress view removed");
+    }
+
+    /**
+     * Removes the screenshot view as a child of TurbolinksView
+     */
+    private void removeScreenshotView() {
+        if (screenshotView == null) return;
+
+        removeView(screenshotView);
+        screenshotView = null;
+        TurbolinksLog.d("Screenshot removed");
     }
 
     /**
@@ -160,6 +174,7 @@ public class TurbolinksView extends FrameLayout {
         screenshotView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         screenshotView.setClickable(true);
         screenshotView.setImageBitmap(screenshot);
+        screenshotOrientation = getOrientation();
 
         addView(screenshotView);
 
@@ -176,5 +191,13 @@ public class TurbolinksView extends FrameLayout {
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         draw(new Canvas(bitmap));
         return bitmap;
+    }
+
+    /**
+     * Gets the current orientation of the device.
+     * @return The current orientation.
+     */
+    private int getOrientation() {
+        return getContext().getResources().getConfiguration().orientation;
     }
 }
