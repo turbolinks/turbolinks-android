@@ -344,10 +344,15 @@ public class TurbolinksSession {
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
-    public void visitProposedToLocationWithAction(String location, String action) {
+    public void visitProposedToLocationWithAction(final String location, final String action) {
         TurbolinksLog.d("visitProposedToLocationWithAction called");
 
-        turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+            @Override
+            public void run() {
+                turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+            }
+        });
     }
 
     /**
