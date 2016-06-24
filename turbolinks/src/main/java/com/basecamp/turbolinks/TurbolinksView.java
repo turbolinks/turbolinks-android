@@ -125,6 +125,8 @@ public class TurbolinksView extends FrameLayout {
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
     void attachWebView(WebView webView, boolean screenshotsEnabled) {
+        if (webView.getParent() == this) return;
+
         if (webView.getParent() instanceof TurbolinksView) {
             TurbolinksView parent = (TurbolinksView) webView.getParent();
             if (screenshotsEnabled) parent.screenshotView();
