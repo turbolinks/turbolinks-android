@@ -463,6 +463,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
                 @Override
                 public void run() {
                     turbolinksAdapter.visitCompleted();
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
@@ -733,7 +734,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
 
     /**
      * <p>Convenience method to simply revisit the current location in the TurbolinksSession. Useful
-     * so that different visit logic can be wrapped around this call in {@link #visit} or
+     * so that different visit logic can be wrappered around this call in {@link #visit} or
      * {@link #setTurbolinksIsReady(boolean)}</p>
      */
     private void visitCurrentLocationWithTurbolinks() {

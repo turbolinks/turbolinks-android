@@ -15,7 +15,7 @@ import android.widget.FrameLayout;
 /**
  * <p>The custom view to add to your activity layout.</p>
  */
-public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
+public class TurbolinksView extends FrameLayout {
     private View progressView = null;
     private TurbolinksSession turbolinksSession;
 
@@ -114,10 +114,8 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
      * @param webView The shared webView.
      */
     void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout) {
-        ViewGroup parent = (ViewGroup) swipeRefreshLayout.getParent();
-        if (parent != null) {
-            parent.removeView(swipeRefreshLayout);
-        }
+        removeChildView(swipeRefreshLayout);
+        removeChildView(webView);
 
         // Set the webview background to match the container background
         if (getBackground() instanceof ColorDrawable) {
@@ -128,8 +126,10 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
         addView(swipeRefreshLayout, 0);
     }
 
-    @Override
-    public boolean canChildScrollUp() {
-        return this.getScrollY() > 0;
+    private void removeChildView(View child) {
+        ViewGroup parent = (ViewGroup) child.getParent();
+        if (parent != null) {
+            parent.removeView(child);
+        }
     }
 }
