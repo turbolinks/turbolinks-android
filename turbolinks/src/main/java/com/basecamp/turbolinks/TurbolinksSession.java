@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
  */
-public class TurbolinksSession {
+public class TurbolinksSession implements CanScrollUpCallback {
 
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
@@ -44,6 +45,7 @@ public class TurbolinksSession {
     String currentVisitIdentifier;
     TurbolinksAdapter turbolinksAdapter;
     TurbolinksView turbolinksView;
+    TurbolinksSwipeRefreshLayout swipeRefreshLayout;
     View progressView;
     View progressIndicator;
 
@@ -55,6 +57,7 @@ public class TurbolinksSession {
 
     static final String ACTION_ADVANCE = "advance";
     static final String ACTION_RESTORE = "restore";
+    static final String ACTION_REPLACE = "replace";
     static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
     static final int PROGRESS_INDICATOR_DELAY = 500;
 
@@ -74,6 +77,15 @@ public class TurbolinksSession {
         if (context == null) {
             throw new IllegalArgumentException("Context must not be null.");
         }
+
+        this.swipeRefreshLayout = new TurbolinksSwipeRefreshLayout(context, null);
+        this.swipeRefreshLayout.setCanScrollUpCallback(this);
+        this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                visitLocationWithAction(location, ACTION_REPLACE);
+            }
+        });
 
         this.applicationContext = context.getApplicationContext();
         this.webView = TurbolinksHelper.createWebView(applicationContext);
@@ -245,7 +257,7 @@ public class TurbolinksSession {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView);
+        this.turbolinksView.attachWebView(webView, swipeRefreshLayout);
 
         return this;
     }
@@ -721,7 +733,7 @@ public class TurbolinksSession {
 
     /**
      * <p>Convenience method to simply revisit the current location in the TurbolinksSession. Useful
-     * so that different visit logic can be wrappered around this call in {@link #visit} or
+     * so that different visit logic can be wrapped around this call in {@link #visit} or
      * {@link #setTurbolinksIsReady(boolean)}</p>
      */
     private void visitCurrentLocationWithTurbolinks() {
@@ -751,5 +763,10 @@ public class TurbolinksSession {
         if (TextUtils.isEmpty(location)) {
             throw new IllegalArgumentException("TurbolinksSession.visit(location) location value must not be null.");
         }
+    }
+
+    @Override
+    public boolean canChildScrollUp() {
+        return this.webView.getScrollY() > 0;
     }
 }
