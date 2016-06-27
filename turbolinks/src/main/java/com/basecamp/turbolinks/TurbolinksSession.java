@@ -36,6 +36,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
     boolean coldBootInProgress;
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
+    boolean screenshotsEnabled;
     int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
@@ -88,6 +89,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
         });
 
         this.applicationContext = context.getApplicationContext();
+        this.screenshotsEnabled = true;
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
@@ -257,7 +259,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView, swipeRefreshLayout);
+        this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled);
 
         return this;
     }
@@ -354,10 +356,15 @@ public class TurbolinksSession implements CanScrollUpCallback {
      */
     @SuppressWarnings("unused")
     @android.webkit.JavascriptInterface
-    public void visitProposedToLocationWithAction(String location, String action) {
+    public void visitProposedToLocationWithAction(final String location, final String action) {
         TurbolinksLog.d("visitProposedToLocationWithAction called");
 
-        turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+            @Override
+            public void run() {
+                turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+            }
+        });
     }
 
     /**
@@ -518,7 +525,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
                  */
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
-                    turbolinksView.removeProgressView();
+                    turbolinksView.hideProgress();
                     progressView = null;
                 }
             }
@@ -574,7 +581,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
             public void run() {
                 TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
                 resetToColdBoot();
-                turbolinksView.removeProgressView();
+                turbolinksView.hideProgress();
             }
         });
     }
@@ -661,6 +668,16 @@ public class TurbolinksSession implements CanScrollUpCallback {
     }
 
     /**
+     * <p>Determines whether screenshots are displayed (instead of a progress view) when resuming
+     * an activity. Default is true.</p>
+     *
+     * @param enabled If true automatic screenshotting is enabled.
+     */
+    public void setScreenshotsEnabled(boolean enabled) {
+        screenshotsEnabled = enabled;
+    }
+
+    /**
      * <p>Provides the status of whether Turbolinks is initialized and ready for use.</p>
      *
      * @return True if Turbolinks has been fully loaded and detected on the page.
@@ -729,7 +746,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
         }
 
         // Executed from here to account for progress indicator delay
-        turbolinksView.showProgressView(progressView, progressIndicator, progressIndicatorDelay);
+        turbolinksView.showProgress(progressView, progressIndicator, progressIndicatorDelay);
     }
 
     /**

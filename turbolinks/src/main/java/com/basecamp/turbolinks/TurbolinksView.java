@@ -1,7 +1,10 @@
 package com.basecamp.turbolinks;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Handler;
@@ -11,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 /**
  * <p>The custom view to add to your activity layout.</p>
@@ -18,6 +22,8 @@ import android.widget.FrameLayout;
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
     private TurbolinksSession turbolinksSession;
+    private ImageView screenshotView = null;
+    private int screenshotOrientation = 0;
 
     // ---------------------------------------------------
     // Constructors
@@ -71,8 +77,11 @@ public class TurbolinksView extends FrameLayout {
     // ---------------------------------------------------
 
     /**
-     * <p>Detaches/attaches a progress view on top of the TurbolinksView to indicate the page is
-     * loading. Progress indicator is set to a specified delay before displaying -- a very short delay
+     * <p>Shows a progress view or a generated screenshot of the webview content (if available)
+     * on top of the webview. When advancing to a new url, this indicates that the page is still
+     * loading. When resuming an activity in the navigation stack, a screenshot is displayed while the
+     * webview is restoring its snapshot.</p>
+     * <p>Progress indicator is set to a specified delay before displaying -- a very short delay
      * (like 500 ms) can improve perceived loading time to the user.</p>
      *
      * @param progressView The progressView to display on top of TurbolinksView.
@@ -80,10 +89,13 @@ public class TurbolinksView extends FrameLayout {
      * @param delay The delay before showing the progressIndicator in the view. The default progress view
      *              is 500 ms.
      */
-    void showProgressView(final View progressView, final View progressIndicator, int delay) {
-        TurbolinksLog.d("showProgressView called");
+    void showProgress(final View progressView, final View progressIndicator, int delay) {
+        TurbolinksLog.d("showProgress called");
 
-        removeProgressView();
+        // Don't show the progress view if a screenshot is available
+        if (screenshotView != null && screenshotOrientation == getOrientation()) return;
+
+        hideProgress();
 
         this.progressView = progressView;
         progressView.setClickable(true);
@@ -101,20 +113,29 @@ public class TurbolinksView extends FrameLayout {
     }
 
     /**
-     * <p>Removes the progressView from the TurbolinksView. Ensures no exceptions are thrown where
-     * the progressView is already attached to another view.</p>
+     * <p>Removes the progress view and/or screenshot from the TurbolinksView, so the webview is
+     * visible underneath.</p>
      */
-    void removeProgressView() {
-        removeView(progressView);
+    void hideProgress() {
+        removeProgressView();
+        removeScreenshotView();
     }
 
     /**
      * <p>Attach the shared webView to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
+     * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
-    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout) {
-        removeChildView(swipeRefreshLayout);
+    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled) {
+        if (swipeRefreshLayout.getParent() == this) return;
+
+        if (swipeRefreshLayout.getParent() instanceof TurbolinksView) {
+            TurbolinksView parent = (TurbolinksView) swipeRefreshLayout.getParent();
+            if (screenshotsEnabled) parent.screenshotView();
+            parent.removeView(swipeRefreshLayout);
+        }
+
         removeChildView(webView);
 
         // Set the webview background to match the container background
@@ -131,5 +152,67 @@ public class TurbolinksView extends FrameLayout {
         if (parent != null) {
             parent.removeView(child);
         }
+    }
+
+    /**
+     * Removes the progress view as a child of TurbolinksView
+     */
+    private void removeProgressView() {
+        if (progressView == null) return;
+
+        removeView(progressView);
+        TurbolinksLog.d("Progress view removed");
+    }
+
+    /**
+     * Removes the screenshot view as a child of TurbolinksView
+     */
+    private void removeScreenshotView() {
+        if (screenshotView == null) return;
+
+        removeView(screenshotView);
+        screenshotView = null;
+        TurbolinksLog.d("Screenshot removed");
+    }
+
+    /**
+     * <p>Creates a screenshot of the current webview content and makes it the top visible view.</p>
+     */
+    private void screenshotView() {
+        // Only take a screenshot if the activity is not finishing
+        if (getContext() instanceof Activity && ((Activity) getContext()).isFinishing()) return;
+
+        Bitmap screenshot = getScreenshotBitmap();
+        if (screenshot == null) return;
+
+        screenshotView = new ImageView(getContext());
+        screenshotView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        screenshotView.setClickable(true);
+        screenshotView.setImageBitmap(screenshot);
+        screenshotOrientation = getOrientation();
+
+        addView(screenshotView);
+
+        TurbolinksLog.d("Screenshot taken");
+    }
+
+    /**
+     * <p>Creates a bitmap screenshot of the webview contents from the canvas.</p>
+     * @return The screenshot of the webview contents.
+     */
+    private Bitmap getScreenshotBitmap() {
+        if (getWidth() <= 0 || getHeight() <= 0) return null;
+
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        draw(new Canvas(bitmap));
+        return bitmap;
+    }
+
+    /**
+     * Gets the current orientation of the device.
+     * @return The current orientation.
+     */
+    private int getOrientation() {
+        return getContext().getResources().getConfiguration().orientation;
     }
 }
