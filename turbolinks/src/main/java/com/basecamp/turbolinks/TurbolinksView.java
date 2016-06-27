@@ -36,7 +36,7 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
      * <p>Constructor to match FrameLayout.</p>
      *
      * @param context Refer to FrameLayout.
-     * @param attrs   Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -45,8 +45,8 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context      Refer to FrameLayout.
-     * @param attrs        Refer to FrameLayout.
+     * @param context Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
      * @param defStyleAttr Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -56,10 +56,10 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context      Refer to FrameLayout.
-     * @param attrs        Refer to FrameLayout.
+     * @param context Refer to FrameLayout.
+     * @param attrs Refer to FrameLayout.
      * @param defStyleAttr Refer to FrameLayout.
-     * @param defStyleRes  Refer to FrameLayout.
+     * @param defStyleRes Refer to FrameLayout.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -75,10 +75,10 @@ public class TurbolinksView extends FrameLayout implements CanScrollUpCallback {
      * loading. Progress indicator is set to a specified delay before displaying -- a very short delay
      * (like 500 ms) can improve perceived loading time to the user.</p>
      *
-     * @param progressView      The progressView to display on top of TurbolinksView.
+     * @param progressView The progressView to display on top of TurbolinksView.
      * @param progressIndicator The progressIndicator to display in the view.
-     * @param delay             The delay before showing the progressIndicator in the view. The default progress view
-     *                          is 500 ms.
+     * @param delay The delay before showing the progressIndicator in the view. The default progress view
+     *              is 500 ms.
      */
     void showProgressView(final View progressView, final View progressIndicator, int delay) {
         TurbolinksLog.d("showProgressView called");
