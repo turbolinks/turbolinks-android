@@ -80,7 +80,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
         }
 
         this.swipeRefreshLayout = new TurbolinksSwipeRefreshLayout(context, null);
-        this.swipeRefreshLayout.setCanScrollUpCallback(this);
+        this.swipeRefreshLayout.setCallback(this);
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

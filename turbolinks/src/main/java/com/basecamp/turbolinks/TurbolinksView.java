@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Handler;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -136,7 +135,7 @@ public class TurbolinksView extends FrameLayout {
             parent.removeView(swipeRefreshLayout);
         }
 
-        removeChildView(webView);
+        removeChildViewFromSwipeRefresh(webView);
 
         // Set the webview background to match the container background
         if (getBackground() instanceof ColorDrawable) {
@@ -147,7 +146,7 @@ public class TurbolinksView extends FrameLayout {
         addView(swipeRefreshLayout, 0);
     }
 
-    private void removeChildView(View child) {
+    private void removeChildViewFromSwipeRefresh(View child) {
         ViewGroup parent = (ViewGroup) child.getParent();
         if (parent != null) {
             parent.removeView(child);
