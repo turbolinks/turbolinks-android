@@ -124,6 +124,7 @@ public class TurbolinksView extends FrameLayout {
      * <p>Attach the shared webView to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
+     * @param swipeRefreshLayout parent view of webView
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
     void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled) {
