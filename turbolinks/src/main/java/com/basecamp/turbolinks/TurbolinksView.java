@@ -127,8 +127,10 @@ public class TurbolinksView extends FrameLayout {
      * @param swipeRefreshLayout parent view of webView
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      */
-    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled) {
+    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
         if (swipeRefreshLayout.getParent() == this) return;
+
+        if (!pullToRefreshEnabled) swipeRefreshLayout.setEnabled(false);
 
         if (swipeRefreshLayout.getParent() instanceof TurbolinksView) {
             TurbolinksView parent = (TurbolinksView) swipeRefreshLayout.getParent();

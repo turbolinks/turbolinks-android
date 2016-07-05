@@ -5,7 +5,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 
 public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
-
     private CanScrollUpCallback callback;
 
     public TurbolinksSwipeRefreshLayout(Context context) {

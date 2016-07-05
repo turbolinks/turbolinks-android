@@ -37,6 +37,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
     boolean screenshotsEnabled;
+    boolean pullToRefreshEnabled;
     int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
@@ -79,6 +80,10 @@ public class TurbolinksSession implements CanScrollUpCallback {
             throw new IllegalArgumentException("Context must not be null.");
         }
 
+        this.applicationContext = context.getApplicationContext();
+        this.screenshotsEnabled = true;
+        this.pullToRefreshEnabled = true;
+
         this.swipeRefreshLayout = new TurbolinksSwipeRefreshLayout(context, null);
         this.swipeRefreshLayout.setCallback(this);
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -88,8 +93,6 @@ public class TurbolinksSession implements CanScrollUpCallback {
             }
         });
 
-        this.applicationContext = context.getApplicationContext();
-        this.screenshotsEnabled = true;
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
@@ -259,7 +262,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled);
+        this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled, pullToRefreshEnabled);
 
         return this;
     }
@@ -675,6 +678,16 @@ public class TurbolinksSession implements CanScrollUpCallback {
      */
     public void setScreenshotsEnabled(boolean enabled) {
         screenshotsEnabled = enabled;
+    }
+
+    /**
+     * <p>Determines whether WebViews can be refreshed by pulling/swiping from the top
+     * of the WebView. Default is true.</p>
+     *
+     * @param enabled If true pulling to refresh the WebView is enabled
+     */
+    public void setPullToRefreshEnabled(boolean enabled) {
+        pullToRefreshEnabled = enabled;
     }
 
     /**
