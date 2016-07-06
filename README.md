@@ -174,7 +174,7 @@ You'll need to weigh the benefits and complexities of those options, but the bot
 ### Custom TurbolinksSession Settings
 There are some optional features in TurbolinksSession that are enabled by default. 
 
-## Pull To Refresh
+#### Pull To Refresh
 Refreshes the TurbolinksView when a user swipes down from the top of the view. 
 To disable simply call:
 ```java
