@@ -171,6 +171,16 @@ Some things to keep in mind if you create your own instance of TurbolinksSession
 
 You'll need to weigh the benefits and complexities of those options, but the bottom line is that you'll want to carefully manage the lifecycle of your Turbolinks instance(s).
 
+### Custom TurbolinksSession Settings
+There are some optional features in TurbolinksSession that are enabled by default. 
+
+## Pull To Refresh
+Refreshes the TurbolinksView when a user swipes down from the top of the view. 
+To disable simply call:
+```java
+turbolinksSession.setPullToRefreshEnabled(false);
+```
+
 ### Custom Progress View
 
 By default the library will provide you with a progress view with a progress bar -- a simple `FrameLayout` that covers the `WebView` while it's loading, and shows a spinner after 500ms.
