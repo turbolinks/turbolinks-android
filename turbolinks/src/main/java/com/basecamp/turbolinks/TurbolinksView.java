@@ -121,16 +121,17 @@ public class TurbolinksView extends FrameLayout {
     }
 
     /**
-     * <p>Attach the shared webView to the TurbolinksView.</p>
+     * <p>Attach the swipeRefreshLayout, which contains the shared webView, to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
      * @param swipeRefreshLayout parent view of webView
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
+     * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      */
     void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
         if (swipeRefreshLayout.getParent() == this) return;
 
-        if (!pullToRefreshEnabled) swipeRefreshLayout.setEnabled(false);
+        swipeRefreshLayout.setEnabled(pullToRefreshEnabled);
 
         if (swipeRefreshLayout.getParent() instanceof TurbolinksView) {
             TurbolinksView parent = (TurbolinksView) swipeRefreshLayout.getParent();
@@ -149,11 +150,13 @@ public class TurbolinksView extends FrameLayout {
         addView(swipeRefreshLayout, 0);
     }
 
+    /**
+     * Used to remove the child WebView from the swipeRefreshLayout.
+     * @param child WebView that is child of swipeRefreshLayout
+     */
     private void removeChildViewFromSwipeRefresh(View child) {
         ViewGroup parent = (ViewGroup) child.getParent();
-        if (parent != null) {
-            parent.removeView(child);
-        }
+        if (parent != null) { parent.removeView(child); }
     }
 
     /**

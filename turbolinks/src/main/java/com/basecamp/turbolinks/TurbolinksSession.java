@@ -796,6 +796,15 @@ public class TurbolinksSession implements CanScrollUpCallback {
         }
     }
 
+    // ---------------------------------------------------
+    // Interfaces
+    // ---------------------------------------------------
+
+    /**
+     * <p>Determines if the user can scroll up, or if the WebView is at the top</p>
+     *
+     * @return True if the WebView can be scrolled up. False if the WebView is at the top.
+     */
     @Override
     public boolean canChildScrollUp() {
         return this.webView.getScrollY() > 0;
