@@ -171,7 +171,7 @@ Some things to keep in mind if you create your own instance of TurbolinksSession
 
 You'll need to weigh the benefits and complexities of those options, but the bottom line is that you'll want to carefully manage the lifecycle of your Turbolinks instance(s).
 
-### Custom TurbolinksSession Settings
+### Overriding Default TurbolinksSession Settings
 There are some optional features in TurbolinksSession that are enabled by default. 
 
 #### Pull To Refresh
