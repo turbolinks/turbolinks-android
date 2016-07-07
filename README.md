@@ -27,8 +27,13 @@ repositories {
 }
 
 dependencies {
-    'com.basecamp:turbolinks:1.0.2'
+    compile 'com.basecamp:turbolinks:1.0.2'
 }
+```
+
+Add the INTERNET permission to `AndroidManifest.xml`
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
 ```
 
 ## Getting Started (Three Steps)
