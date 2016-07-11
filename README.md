@@ -148,6 +148,16 @@ This is a callback from Turbolinks telling you that a change has been detected i
 
 The library will automatically fall back to cold booting the location (which it must do since resources have been changed) and then will notify you via this callback that the page was invalidated. This is an opportunity for you to clean up any UI state that you might have lingering around that may no longer be valid (like a screenshot, title data, etc.)
 
+### Overriding Default TurbolinksSession Settings
+There are some optional features in TurbolinksSession that are enabled by default.
+
+#### Pull To Refresh
+Refreshes the TurbolinksView when a user swipes down from the top of the view.
+To disable simply call:
+```java
+turbolinksSession.setPullToRefreshEnabled(false);
+```
+
 ### Custom Instance(s) of TurbolinksSession
 
 We provide a single, reusable instance of TurbolinksSession that you can access through this convenience method:
