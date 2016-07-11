@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
  */
 public class TurbolinksView extends FrameLayout {
     private View progressView = null;
+    private TurbolinksSession turbolinksSession;
     private ImageView screenshotView = null;
     private int screenshotOrientation = 0;
 
@@ -119,26 +121,42 @@ public class TurbolinksView extends FrameLayout {
     }
 
     /**
-     * <p>Attach the shared webView to the TurbolinksView.</p>
+     * <p>Attach the swipeRefreshLayout, which contains the shared webView, to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
+     * @param swipeRefreshLayout parent view of webView
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
+     * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      */
-    void attachWebView(WebView webView, boolean screenshotsEnabled) {
-        if (webView.getParent() == this) return;
+    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
+        if (swipeRefreshLayout.getParent() == this) return;
 
-        if (webView.getParent() instanceof TurbolinksView) {
-            TurbolinksView parent = (TurbolinksView) webView.getParent();
+        swipeRefreshLayout.setEnabled(pullToRefreshEnabled);
+
+        if (swipeRefreshLayout.getParent() instanceof TurbolinksView) {
+            TurbolinksView parent = (TurbolinksView) swipeRefreshLayout.getParent();
             if (screenshotsEnabled) parent.screenshotView();
-            parent.removeView(webView);
+            parent.removeView(swipeRefreshLayout);
         }
+
+        removeChildViewFromSwipeRefresh(webView);
 
         // Set the webview background to match the container background
         if (getBackground() instanceof ColorDrawable) {
             webView.setBackgroundColor(((ColorDrawable) getBackground()).getColor());
         }
 
-        addView(webView, 0);
+        swipeRefreshLayout.addView(webView);
+        addView(swipeRefreshLayout, 0);
+    }
+
+    /**
+     * Used to remove the child WebView from the swipeRefreshLayout.
+     * @param child WebView that is child of swipeRefreshLayout
+     */
+    private void removeChildViewFromSwipeRefresh(View child) {
+        ViewGroup parent = (ViewGroup) child.getParent();
+        if (parent != null) { parent.removeView(child); }
     }
 
     /**

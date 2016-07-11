@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
  */
-public class TurbolinksSession {
+public class TurbolinksSession implements CanScrollUpCallback {
 
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
@@ -36,6 +37,7 @@ public class TurbolinksSession {
     boolean restoreWithCachedSnapshot;
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
     boolean screenshotsEnabled;
+    boolean pullToRefreshEnabled;
     int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
@@ -45,6 +47,7 @@ public class TurbolinksSession {
     String currentVisitIdentifier;
     TurbolinksAdapter turbolinksAdapter;
     TurbolinksView turbolinksView;
+    TurbolinksSwipeRefreshLayout swipeRefreshLayout;
     View progressView;
     View progressIndicator;
 
@@ -56,6 +59,7 @@ public class TurbolinksSession {
 
     static final String ACTION_ADVANCE = "advance";
     static final String ACTION_RESTORE = "restore";
+    static final String ACTION_REPLACE = "replace";
     static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
     static final int PROGRESS_INDICATOR_DELAY = 500;
 
@@ -78,6 +82,17 @@ public class TurbolinksSession {
 
         this.applicationContext = context.getApplicationContext();
         this.screenshotsEnabled = true;
+        this.pullToRefreshEnabled = true;
+
+        this.swipeRefreshLayout = new TurbolinksSwipeRefreshLayout(context, null);
+        this.swipeRefreshLayout.setCallback(this);
+        this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                visitLocationWithAction(location, ACTION_REPLACE);
+            }
+        });
+
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
@@ -247,7 +262,7 @@ public class TurbolinksSession {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView, screenshotsEnabled);
+        this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled, pullToRefreshEnabled);
 
         return this;
     }
@@ -458,6 +473,7 @@ public class TurbolinksSession {
                 @Override
                 public void run() {
                     turbolinksAdapter.visitCompleted();
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
@@ -665,6 +681,16 @@ public class TurbolinksSession {
     }
 
     /**
+     * <p>Determines whether WebViews can be refreshed by pulling/swiping from the top
+     * of the WebView. Default is true.</p>
+     *
+     * @param enabled If true pulling to refresh the WebView is enabled
+     */
+    public void setPullToRefreshEnabled(boolean enabled) {
+        pullToRefreshEnabled = enabled;
+    }
+
+    /**
      * <p>Provides the status of whether Turbolinks is initialized and ready for use.</p>
      *
      * @return True if Turbolinks has been fully loaded and detected on the page.
@@ -768,5 +794,19 @@ public class TurbolinksSession {
         if (TextUtils.isEmpty(location)) {
             throw new IllegalArgumentException("TurbolinksSession.visit(location) location value must not be null.");
         }
+    }
+
+    // ---------------------------------------------------
+    // Interfaces
+    // ---------------------------------------------------
+
+    /**
+     * <p>Determines if the user can scroll up, or if the WebView is at the top</p>
+     *
+     * @return True if the WebView can be scrolled up. False if the WebView is at the top.
+     */
+    @Override
+    public boolean canChildScrollUp() {
+        return this.webView.getScrollY() > 0;
     }
 }
