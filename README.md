@@ -35,9 +35,8 @@ dependencies {
 
 ### Prerequisites
 
-We recommend using Turbolinks from an activity or an extension of your activity, like a custom controller.
-
-This library hasn't been tested with Android Fragments (we don't use them). We'd recommend avoiding Fragments with this library, as they might produce unintended results.
+1. We recommend using Turbolinks from an activity or an extension of your activity, like a custom controller. This library hasn't been tested with Android Fragments (we don't use them). We'd recommend avoiding Fragments with this library, as they might produce unintended results.
+2. Android API 19+ is required as the `minSdkVersion` in your build.gradle
 
 ### 1. Add TurbolinksView to a Layout
 
