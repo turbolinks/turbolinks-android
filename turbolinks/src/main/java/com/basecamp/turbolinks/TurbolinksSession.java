@@ -423,6 +423,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
     @android.webkit.JavascriptInterface
     public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
         TurbolinksLog.d("visitRequestFailedWithStatusCode called");
+        hideProgressView(visitIdentifier);
 
         if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
             TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
