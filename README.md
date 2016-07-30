@@ -36,7 +36,8 @@ dependencies {
 ### Prerequisites
 
 1. We recommend using Turbolinks from an activity or an extension of your activity, like a custom controller. This library hasn't been tested with Android Fragments (we don't use them). We'd recommend avoiding Fragments with this library, as they might produce unintended results.
-2. Android API 19+ is required as the `minSdkVersion` in your build.gradle
+2. Android API 19+ is required as the `minSdkVersion` in your build.gradle.
+3. In order for a  [WebView](https://developer.android.com/reference/android/webkit/WebView.html) to access the Internet and load web pages, your application must have the `INTERNET` permission. Make sure you have `<uses-permission android:name="android.permission.INTERNET" />` in your Android manifest.
 
 ### 1. Add TurbolinksView to a Layout
 
