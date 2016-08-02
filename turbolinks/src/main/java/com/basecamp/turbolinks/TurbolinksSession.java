@@ -47,7 +47,6 @@ public class TurbolinksSession implements CanScrollUpCallback {
     String currentVisitIdentifier;
     TurbolinksAdapter turbolinksAdapter;
     TurbolinksView turbolinksView;
-    TurbolinksSwipeRefreshLayout swipeRefreshLayout;
     View progressView;
     View progressIndicator;
 
@@ -83,15 +82,6 @@ public class TurbolinksSession implements CanScrollUpCallback {
         this.applicationContext = context.getApplicationContext();
         this.screenshotsEnabled = true;
         this.pullToRefreshEnabled = true;
-
-        this.swipeRefreshLayout = new TurbolinksSwipeRefreshLayout(context, null);
-        this.swipeRefreshLayout.setCallback(this);
-        this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                visitLocationWithAction(location, ACTION_REPLACE);
-            }
-        });
 
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
@@ -262,7 +252,14 @@ public class TurbolinksSession implements CanScrollUpCallback {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled, pullToRefreshEnabled);
+        this.turbolinksView.getRefreshLayout().setCallback(this);
+        this.turbolinksView.getRefreshLayout().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                visitLocationWithAction(location, ACTION_REPLACE);
+            }
+        });
+        this.turbolinksView.attachWebView(webView, screenshotsEnabled, pullToRefreshEnabled);
 
         return this;
     }
@@ -473,7 +470,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
                 @Override
                 public void run() {
                     turbolinksAdapter.visitCompleted();
-                    swipeRefreshLayout.setRefreshing(false);
+                    turbolinksView.getRefreshLayout().setRefreshing(false);
                 }
             });
         }

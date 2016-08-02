@@ -10,17 +10,25 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+/* The internal view hierarchy uses the following structure:
+ *
+ * TurbolinksView
+ *   > TurbolinksSwipeRefreshLayout
+ *     > WebView (gets attached/detached here)
+ *   > Progress View
+ *   > Screenshot View
+ */
 
 /**
  * <p>The custom view to add to your activity layout.</p>
  */
 public class TurbolinksView extends FrameLayout {
+    private TurbolinksSwipeRefreshLayout refreshLayout = null;
     private View progressView = null;
-    private TurbolinksSession turbolinksSession;
     private ImageView screenshotView = null;
     private int screenshotOrientation = 0;
 
@@ -35,6 +43,7 @@ public class TurbolinksView extends FrameLayout {
      */
     public TurbolinksView(Context context) {
         super(context);
+        init();
     }
 
     /**
@@ -45,6 +54,7 @@ public class TurbolinksView extends FrameLayout {
      */
     public TurbolinksView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     /**
@@ -56,6 +66,7 @@ public class TurbolinksView extends FrameLayout {
      */
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
     }
 
     /**
@@ -69,6 +80,15 @@ public class TurbolinksView extends FrameLayout {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
+    /**
+     * <p>Initializes the view in a common places from all constructors.</p>
+     */
+    private void init() {
+        refreshLayout = new TurbolinksSwipeRefreshLayout(getContext(), null);
+        addView(refreshLayout, 0);
     }
 
     // ---------------------------------------------------
@@ -124,39 +144,36 @@ public class TurbolinksView extends FrameLayout {
      * <p>Attach the swipeRefreshLayout, which contains the shared webView, to the TurbolinksView.</p>
      *
      * @param webView The shared webView.
-     * @param swipeRefreshLayout parent view of webView
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      */
-    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
-        if (swipeRefreshLayout.getParent() == this) return;
+    void attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
+        if (webView.getParent() == refreshLayout) return;
 
-        swipeRefreshLayout.setEnabled(pullToRefreshEnabled);
+        refreshLayout.setEnabled(pullToRefreshEnabled);
 
-        if (swipeRefreshLayout.getParent() instanceof TurbolinksView) {
-            TurbolinksView parent = (TurbolinksView) swipeRefreshLayout.getParent();
-            if (screenshotsEnabled) parent.screenshotView();
-            parent.removeView(swipeRefreshLayout);
+        if (webView.getParent() instanceof TurbolinksSwipeRefreshLayout) {
+            TurbolinksSwipeRefreshLayout previousRefreshLayout = (TurbolinksSwipeRefreshLayout) webView.getParent();
+            TurbolinksView previousTurbolinksView = (TurbolinksView) previousRefreshLayout.getParent();
+
+            if (screenshotsEnabled) previousTurbolinksView.screenshotView();
+            previousRefreshLayout.removeView(webView);
         }
-
-        removeChildViewFromSwipeRefresh(webView);
 
         // Set the webview background to match the container background
         if (getBackground() instanceof ColorDrawable) {
             webView.setBackgroundColor(((ColorDrawable) getBackground()).getColor());
         }
 
-        swipeRefreshLayout.addView(webView);
-        addView(swipeRefreshLayout, 0);
+        refreshLayout.addView(webView);
     }
 
     /**
-     * Used to remove the child WebView from the swipeRefreshLayout.
-     * @param child WebView that is child of swipeRefreshLayout
+     * <p>Gets the refresh layout used internally for pull-to-refresh functionality.</p>
+     * @return The internal refresh layout.
      */
-    private void removeChildViewFromSwipeRefresh(View child) {
-        ViewGroup parent = (ViewGroup) child.getParent();
-        if (parent != null) { parent.removeView(child); }
+    TurbolinksSwipeRefreshLayout getRefreshLayout() {
+        return refreshLayout;
     }
 
     /**
