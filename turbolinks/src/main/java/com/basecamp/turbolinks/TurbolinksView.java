@@ -148,7 +148,10 @@ public class TurbolinksView extends FrameLayout {
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      */
     void attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
-        if (webView.getParent() == refreshLayout) return;
+        if (webView.getParent() == refreshLayout) {
+            hideProgress();
+            return;
+        }
 
         refreshLayout.setEnabled(pullToRefreshEnabled);
 
