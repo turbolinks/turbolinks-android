@@ -8,6 +8,9 @@ import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +36,7 @@ public class TurbolinksView extends FrameLayout {
      *
      * @param context Refer to FrameLayout.
      */
-    public TurbolinksView(Context context) {
+    public TurbolinksView(@NonNull Context context) {
         super(context);
     }
 
@@ -43,7 +46,7 @@ public class TurbolinksView extends FrameLayout {
      * @param context Refer to FrameLayout.
      * @param attrs Refer to FrameLayout.
      */
-    public TurbolinksView(Context context, AttributeSet attrs) {
+    public TurbolinksView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -54,7 +57,7 @@ public class TurbolinksView extends FrameLayout {
      * @param attrs Refer to FrameLayout.
      * @param defStyleAttr Refer to FrameLayout.
      */
-    public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TurbolinksView(@NonNull Context context, @Nullable  AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -67,7 +70,7 @@ public class TurbolinksView extends FrameLayout {
      * @param defStyleRes Refer to FrameLayout.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public TurbolinksView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
@@ -88,7 +91,8 @@ public class TurbolinksView extends FrameLayout {
      * @param delay The delay before showing the progressIndicator in the view. The default progress view
      *              is 500 ms.
      */
-    void showProgress(final View progressView, final View progressIndicator, int delay) {
+    @UiThread
+    void showProgress(@NonNull final View progressView, @NonNull final View progressIndicator, int delay) {
         TurbolinksLog.d("showProgress called");
 
         // Don't show the progress view if a screenshot is available
@@ -115,6 +119,7 @@ public class TurbolinksView extends FrameLayout {
      * <p>Removes the progress view and/or screenshot from the TurbolinksView, so the webview is
      * visible underneath.</p>
      */
+    @UiThread
     void hideProgress() {
         removeProgressView();
         removeScreenshotView();
@@ -128,7 +133,8 @@ public class TurbolinksView extends FrameLayout {
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      */
-    void attachWebView(WebView webView, TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
+    @UiThread
+    void attachWebView(@NonNull WebView webView, @NonNull TurbolinksSwipeRefreshLayout swipeRefreshLayout, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
         if (swipeRefreshLayout.getParent() == this) return;
 
         swipeRefreshLayout.setEnabled(pullToRefreshEnabled);
@@ -154,7 +160,8 @@ public class TurbolinksView extends FrameLayout {
      * Used to remove the child WebView from the swipeRefreshLayout.
      * @param child WebView that is child of swipeRefreshLayout
      */
-    private void removeChildViewFromSwipeRefresh(View child) {
+    @UiThread
+    private void removeChildViewFromSwipeRefresh(@NonNull View child) {
         ViewGroup parent = (ViewGroup) child.getParent();
         if (parent != null) { parent.removeView(child); }
     }
@@ -162,6 +169,7 @@ public class TurbolinksView extends FrameLayout {
     /**
      * Removes the progress view as a child of TurbolinksView
      */
+    @UiThread
     private void removeProgressView() {
         if (progressView == null) return;
 
@@ -172,6 +180,7 @@ public class TurbolinksView extends FrameLayout {
     /**
      * Removes the screenshot view as a child of TurbolinksView
      */
+    @UiThread
     private void removeScreenshotView() {
         if (screenshotView == null) return;
 
@@ -183,6 +192,7 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Creates a screenshot of the current webview content and makes it the top visible view.</p>
      */
+    @UiThread
     private void screenshotView() {
         // Only take a screenshot if the activity is not finishing
         if (getContext() instanceof Activity && ((Activity) getContext()).isFinishing()) return;
@@ -205,7 +215,7 @@ public class TurbolinksView extends FrameLayout {
      * <p>Creates a bitmap screenshot of the webview contents from the canvas.</p>
      * @return The screenshot of the webview contents.
      */
-    private Bitmap getScreenshotBitmap() {
+    private @NonNull Bitmap getScreenshotBitmap() {
         if (getWidth() <= 0 || getHeight() <= 0) return null;
 
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);

@@ -9,17 +9,25 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.IdRes;
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -57,14 +65,240 @@ public class TurbolinksSession implements CanScrollUpCallback {
     // Final vars
     // ---------------------------------------------------
 
-    static final String ACTION_ADVANCE = "advance";
-    static final String ACTION_RESTORE = "restore";
-    static final String ACTION_REPLACE = "replace";
-    static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
-    static final int PROGRESS_INDICATOR_DELAY = 500;
 
-    final Context applicationContext;
-    final WebView webView;
+    @StringDef({ACTION_ADVANCE, ACTION_REPLACE, ACTION_RESTORE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Action {}
+
+    public static final String ACTION_ADVANCE = "advance";
+    static final String ACTION_RESTORE = "restore";
+    public static final String ACTION_REPLACE = "replace";
+    private static final String JAVASCRIPT_INTERFACE_NAME = "TurbolinksNative";
+    private static final int PROGRESS_INDICATOR_DELAY = 500;
+
+    private final Context applicationContext;
+    private final WebView webView;
+
+    private final TurbolinksJavascriptInterface TURBOLINKS_JAVASCRIPT_INTERFACE = new TurbolinksJavascriptInterface();
+
+    private class TurbolinksJavascriptInterface {
+
+        // ---------------------------------------------------
+        // TurbolinksNative adapter methods
+        // ---------------------------------------------------
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit is initiated from a
+         * webView link.</p>
+         *
+         * @param location URL to be visited.
+         * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitProposedToLocationWithAction(@NonNull final String location, @Action @NonNull final String action) {
+            TurbolinksLog.d("visitProposedToLocationWithAction called");
+
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                @Override
+                public void run() {
+                    turbolinksAdapter.visitProposedToLocationWithAction(location, action);
+                }
+            });
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit has just started.</p>
+         *
+         * @param visitIdentifier        A unique identifier for the visit.
+         * @param visitHasCachedSnapshot Whether the visit has a cached snapshot available.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitStarted(@NonNull String visitIdentifier, boolean visitHasCachedSnapshot) {
+            TurbolinksLog.d("visitStarted called");
+
+            currentVisitIdentifier = visitIdentifier;
+
+            runJavascript("webView.changeHistoryForVisitWithIdentifier", visitIdentifier);
+            runJavascript("webView.issueRequestForVisitWithIdentifier", visitIdentifier);
+            runJavascript("webView.loadCachedSnapshotForVisitWithIdentifier", visitIdentifier);
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has been
+         * completed.</p>
+         *
+         * @param visitIdentifier A unique identifier for the visit.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitRequestCompleted(@NonNull String visitIdentifier) {
+            TurbolinksLog.d("visitRequestCompleted called");
+
+            if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+                runJavascript("webView.loadResponseForVisitWithIdentifier", visitIdentifier);
+            }
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has failed.</p>
+         *
+         * @param visitIdentifier A unique identifier for the visit.
+         * @param statusCode      The HTTP status code that caused the failure.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitRequestFailedWithStatusCode(@NonNull final String visitIdentifier, final int statusCode) {
+            TurbolinksLog.d("visitRequestFailedWithStatusCode called");
+            hideProgressView(visitIdentifier);
+
+            if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+                TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                    @Override
+                    public void run() {
+                        turbolinksAdapter.requestFailedWithStatusCode(statusCode);
+                    }
+                });
+            }
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks once the page has been fully rendered
+         * in the webView.</p>
+         *
+         * @param visitIdentifier A unique identifier for the visit.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitRendered(@NonNull String visitIdentifier) {
+            TurbolinksLog.d("visitRendered called, hiding progress view for identifier: " + visitIdentifier);
+            hideProgressView(visitIdentifier);
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called by Turbolinks when the visit is fully completed --
+         * request successful and page rendered.</p>
+         *
+         * @param visitIdentifier       A unique identifier for the visit.
+         * @param restorationIdentifier A unique identifier for restoring the page and scroll position
+         *                              from cache.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void visitCompleted(@NonNull String visitIdentifier, @NonNull String restorationIdentifier) {
+            TurbolinksLog.d("visitCompleted called");
+
+            addRestorationIdentifierToMap(restorationIdentifier);
+
+            if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+                TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                    @Override
+                    public void run() {
+                        turbolinksAdapter.visitCompleted();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                });
+            }
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Called when Turbolinks detects that the page being visited
+         * has been invalidated, typically by new resources in the the page HEAD.</p>
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void pageInvalidated() {
+            TurbolinksLog.d("pageInvalidated called");
+
+            resetToColdBoot();
+
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                @Override
+                public void run() { // route through normal chain so progress view is shown, regular logging, etc.
+                    turbolinksAdapter.pageInvalidated();
+
+                    visit(location);
+                }
+            });
+        }
+
+        // ---------------------------------------------------
+        // TurbolinksNative helper methods
+        // ---------------------------------------------------
+
+        /**
+         * <p><b>JavascriptInterface only</b> Hides the progress view when the page is fully rendered.</p>
+         *
+         * @param visitIdentifier A unique identifier for the visit.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void hideProgressView(@NonNull final String visitIdentifier) {
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                @Override
+                public void run() {
+                    /**
+                     * pageInvalidated will cold boot, but another in-flight response from
+                     * visitResponseLoaded could attempt to hide the progress view. Checking
+                     * turbolinksIsReady ensures progress view isn't hidden too soon by the non cold boot.
+                     */
+                    if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
+                        TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
+                        turbolinksView.hideProgress();
+                    }
+                }
+            });
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Sets internal flags that indicate whether Turbolinks in
+         * the webView is ready for use.</p>
+         *
+         * @param turbolinksIsReady The Javascript bridge checks the current page for Turbolinks, and
+         *                          sends the results of that check here.
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void setTurbolinksIsReady(boolean turbolinksIsReady) {
+            TurbolinksSession.this.turbolinksIsReady = turbolinksIsReady;
+
+            if (turbolinksIsReady) {
+                bridgeInjectionInProgress = false;
+
+                TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                    @Override
+                    public void run() {
+                        TurbolinksLog.d("TurbolinksSession is ready");
+                        visitCurrentLocationWithTurbolinks();
+                    }
+                });
+
+                coldBootInProgress = false;
+            } else {
+                TurbolinksLog.d("TurbolinksSession is not ready. Resetting and throw error.");
+                resetToColdBoot();
+                visitRequestFailedWithStatusCode(currentVisitIdentifier, 500);
+            }
+        }
+
+        /**
+         * <p><b>JavascriptInterface only</b> Handles the error condition when reaching a page without
+         * Turbolinks.</p>
+         */
+        @SuppressWarnings("unused")
+        @android.webkit.JavascriptInterface
+        public void turbolinksDoesNotExist() {
+            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
+                @Override
+                public void run() {
+                    TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
+                    resetToColdBoot();
+                    turbolinksView.hideProgress();
+                }
+            });
+        }
+    }
 
     // ---------------------------------------------------
     // Constructor
@@ -89,12 +323,12 @@ public class TurbolinksSession implements CanScrollUpCallback {
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                visitLocationWithAction(location, ACTION_REPLACE);
+                refresh();
             }
         });
 
         this.webView = TurbolinksHelper.createWebView(applicationContext);
-        this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
+        this.webView.addJavascriptInterface(TURBOLINKS_JAVASCRIPT_INTERFACE, JAVASCRIPT_INTERFACE_NAME);
         this.webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -126,8 +360,27 @@ public class TurbolinksSession implements CanScrollUpCallback {
              * override in that situation, since Turbolinks is not yet ready.
              * http://stackoverflow.com/a/6739042/3280911
              */
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return internalShouldOverrideUrlLoading(view, request.getUrl().toString());
+            }
+
+            /**
+             * Turbolinks will not call adapter.visitProposedToLocationWithAction in some cases,
+             * like target=_blank or when the domain doesn't match. We still route those here.
+             * This is mainly only called when links within a webView are clicked and not during
+             * loadUrl. However, a redirect on a cold boot can also cause this to fire, so don't
+             * override in that situation, since Turbolinks is not yet ready.
+             * http://stackoverflow.com/a/6739042/3280911
+             */
+            @SuppressWarnings("deprecation")
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String location) {
+                return internalShouldOverrideUrlLoading(view, location);
+            }
+
+            private boolean internalShouldOverrideUrlLoading(WebView view, String location) {
                 if (!turbolinksIsReady || coldBootInProgress) {
                     return false;
                 }
@@ -141,12 +394,13 @@ public class TurbolinksSession implements CanScrollUpCallback {
                 if ((currentOverrideTime - previousOverrideTime) > 500) {
                     previousOverrideTime = currentOverrideTime;
                     TurbolinksLog.d("Overriding load: " + location);
-                    visitProposedToLocationWithAction(location, ACTION_ADVANCE);
+                    TURBOLINKS_JAVASCRIPT_INTERFACE.visitProposedToLocationWithAction(location, ACTION_ADVANCE);
                 }
 
                 return true;
             }
 
+            @SuppressWarnings("deprecation")
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
@@ -181,7 +435,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param context Any Android context.
      * @return TurbolinksSession to be managed by the calling application.
      */
-    public static TurbolinksSession getNew(Context context) {
+    public static @NonNull  TurbolinksSession getNew(@NonNull Context context) {
         TurbolinksLog.d("TurbolinksSession getNew called");
 
         return new TurbolinksSession(context);
@@ -194,7 +448,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param context Any Android context.
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
-    public static TurbolinksSession getDefault(Context context) {
+    public static @NonNull TurbolinksSession getDefault(@NonNull Context context) {
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
@@ -229,7 +483,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param activity An Android Activity, one per visit.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession activity(Activity activity) {
+    public @NonNull TurbolinksSession activity(@NonNull Activity activity) {
         this.activity = activity;
 
         Context webViewContext = webView.getContext();
@@ -247,7 +501,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession adapter(TurbolinksAdapter turbolinksAdapter) {
+    public @NonNull TurbolinksSession adapter(@NonNull TurbolinksAdapter turbolinksAdapter) {
         this.turbolinksAdapter = turbolinksAdapter;
         return this;
     }
@@ -260,7 +514,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession view(TurbolinksView turbolinksView) {
+    public @NonNull TurbolinksSession view(@NonNull TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
         this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled, pullToRefreshEnabled);
 
@@ -273,7 +527,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param location The URL to visit.
      */
-    public void visit(String location) {
+    public void visit(@NonNull String location) {
         TurbolinksLog.d("visit called");
 
         this.location = location;
@@ -317,7 +571,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *                               inside the progress view (default is 500 ms).
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession progressView(View progressView, int progressIndicatorResId, int progressIndicatorDelay) {
+    public @NonNull TurbolinksSession progressView(@NonNull View progressView, @IdRes int progressIndicatorResId, @IntRange(from = 0) int progressIndicatorDelay) {
         this.progressView = progressView;
         this.progressIndicator = progressView.findViewById(progressIndicatorResId);
         this.progressIndicatorDelay = progressIndicatorDelay;
@@ -338,255 +592,9 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *                                  scroll position.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+    public @NonNull TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         this.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
         return this;
-    }
-
-    // ---------------------------------------------------
-    // TurbolinksNative adapter methods
-    // ---------------------------------------------------
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit is initiated from a
-     * webView link.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param location URL to be visited.
-     * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitProposedToLocationWithAction(final String location, final String action) {
-        TurbolinksLog.d("visitProposedToLocationWithAction called");
-
-        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-            @Override
-            public void run() {
-                turbolinksAdapter.visitProposedToLocationWithAction(location, action);
-            }
-        });
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks when a new visit has just started.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param visitIdentifier        A unique identifier for the visit.
-     * @param visitHasCachedSnapshot Whether the visit has a cached snapshot available.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
-        TurbolinksLog.d("visitStarted called");
-
-        currentVisitIdentifier = visitIdentifier;
-
-        runJavascript("webView.changeHistoryForVisitWithIdentifier", visitIdentifier);
-        runJavascript("webView.issueRequestForVisitWithIdentifier", visitIdentifier);
-        runJavascript("webView.loadCachedSnapshotForVisitWithIdentifier", visitIdentifier);
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has been
-     * completed.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param visitIdentifier A unique identifier for the visit.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitRequestCompleted(String visitIdentifier) {
-        TurbolinksLog.d("visitRequestCompleted called");
-
-        if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-            runJavascript("webView.loadResponseForVisitWithIdentifier", visitIdentifier);
-        }
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the HTTP request has failed.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param visitIdentifier A unique identifier for the visit.
-     * @param statusCode      The HTTP status code that caused the failure.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
-        TurbolinksLog.d("visitRequestFailedWithStatusCode called");
-
-        if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-                @Override
-                public void run() {
-                    turbolinksAdapter.requestFailedWithStatusCode(statusCode);
-                }
-            });
-        }
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks once the page has been fully rendered
-     * in the webView.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param visitIdentifier A unique identifier for the visit.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitRendered(String visitIdentifier) {
-        TurbolinksLog.d("visitRendered called, hiding progress view for identifier: " + visitIdentifier);
-        hideProgressView(visitIdentifier);
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called by Turbolinks when the visit is fully completed --
-     * request successful and page rendered.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     *
-     * @param visitIdentifier       A unique identifier for the visit.
-     * @param restorationIdentifier A unique identifier for restoring the page and scroll position
-     *                              from cache.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void visitCompleted(String visitIdentifier, String restorationIdentifier) {
-        TurbolinksLog.d("visitCompleted called");
-
-        addRestorationIdentifierToMap(restorationIdentifier);
-
-        if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-                @Override
-                public void run() {
-                    turbolinksAdapter.visitCompleted();
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-            });
-        }
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Called when Turbolinks detects that the page being visited
-     * has been invalidated, typically by new resources in the the page HEAD.</p>
-     *
-     * <p>Warning: This method is public so it can be used as a Javascript Interface. you should
-     * never call this directly as it could lead to unintended behavior.</p>
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void pageInvalidated() {
-        TurbolinksLog.d("pageInvalidated called");
-
-        resetToColdBoot();
-
-        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-            @Override
-            public void run() { // route through normal chain so progress view is shown, regular logging, etc.
-                turbolinksAdapter.pageInvalidated();
-
-                visit(location);
-            }
-        });
-    }
-
-    // ---------------------------------------------------
-    // TurbolinksNative helper methods
-    // ---------------------------------------------------
-
-    /**
-     * <p><b>JavascriptInterface only</b> Hides the progress view when the page is fully rendered.</p>
-     *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
-     *
-     * @param visitIdentifier A unique identifier for the visit.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void hideProgressView(final String visitIdentifier) {
-        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-            @Override
-            public void run() {
-                /**
-                 * pageInvalidated will cold boot, but another in-flight response from
-                 * visitResponseLoaded could attempt to hide the progress view. Checking
-                 * turbolinksIsReady ensures progress view isn't hidden too soon by the non cold boot.
-                 */
-                if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
-                    TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
-                    turbolinksView.hideProgress();
-                    progressView = null;
-                }
-            }
-        });
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Sets internal flags that indicate whether Turbolinks in
-     * the webView is ready for use.</p>
-     *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
-     *
-     * @param turbolinksIsReady The Javascript bridge checks the current page for Turbolinks, and
-     *                          sends the results of that check here.
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void setTurbolinksIsReady(boolean turbolinksIsReady) {
-        this.turbolinksIsReady = turbolinksIsReady;
-
-        if (turbolinksIsReady) {
-            bridgeInjectionInProgress = false;
-
-            TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-                @Override
-                public void run() {
-                    TurbolinksLog.d("TurbolinksSession is ready");
-                    visitCurrentLocationWithTurbolinks();
-                }
-            });
-
-            coldBootInProgress = false;
-        } else {
-            TurbolinksLog.d("TurbolinksSession is not ready. Resetting and throw error.");
-            resetToColdBoot();
-            visitRequestFailedWithStatusCode(currentVisitIdentifier, 500);
-        }
-    }
-
-    /**
-     * <p><b>JavascriptInterface only</b> Handles the error condition when reaching a page without
-     * Turbolinks.</p>
-     *
-     * <p>Note: This method is public so it can be used as a Javascript Interface. For all practical
-     * purposes, you should never call this directly.</p>
-     */
-    @SuppressWarnings("unused")
-    @android.webkit.JavascriptInterface
-    public void turbolinksDoesNotExist() {
-        TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
-            @Override
-            public void run() {
-                TurbolinksLog.d("Error instantiating turbolinks_bridge.js - resetting to cold boot.");
-                resetToColdBoot();
-                turbolinksView.hideProgress();
-            }
-        });
     }
 
     // -----------------------------------------------------------------------
@@ -601,7 +609,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param name   The unique name for the interface (must not use the reserved name "TurbolinksNative")
      */
     @SuppressLint("JavascriptInterface")
-    public void addJavascriptInterface(Object object, String name) {
+    public void addJavascriptInterface(@NonNull Object object, @NonNull String name) {
         if (TextUtils.equals(name, JAVASCRIPT_INTERFACE_NAME)) {
             throw new IllegalArgumentException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
         }
@@ -619,7 +627,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @return The attached activity.
      */
-    public Activity getActivity() {
+    public @NonNull  Activity getActivity() {
         return activity;
     }
 
@@ -628,7 +636,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @return The WebView used by Turbolinks.
      */
-    public WebView getWebView() {
+    public @NonNull WebView getWebView() {
         return webView;
     }
 
@@ -648,7 +656,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param functionName The name of the function, without any parenthesis or params
      * @param params       A comma delimited list of params. Params will be automatically JSONified.
      */
-    public void runJavascript(final String functionName, final Object... params) {
+    public void runJavascript(@NonNull final String functionName, @NonNull final Object... params) {
         TurbolinksHelper.runJavascript(applicationContext, webView, functionName, params);
     }
 
@@ -657,7 +665,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param rawJavascript The full Javascript string that will be executed by the WebView.
      */
-    public void runJavascriptRaw(String rawJavascript) {
+    public void runJavascriptRaw(@NonNull String rawJavascript) {
         TurbolinksHelper.runJavascriptRaw(applicationContext, webView, rawJavascript);
     }
 
@@ -705,8 +713,40 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param location URL to visit.
      * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
-    public void visitLocationWithAction(String location, String action) {
+    public void visitLocationWithAction(@NonNull String location, @Action @NonNull String action) {
+        this.location = location;
         runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
+    }
+
+    /**
+     * <p>A convenience method to cause Turbolinks to go back in history, the same way as a browser back button works.</p>
+     *
+     * @return True if Turbolinks was able to go back
+     */
+    public boolean visitBack(){
+        if (webView.canGoBack()) {
+            WebBackForwardList mWebBackForwardList = webView.copyBackForwardList();
+            String historyUrl = mWebBackForwardList.getItemAtIndex(mWebBackForwardList.getCurrentIndex()-1).getUrl();
+            visitLocationWithAction(historyUrl,ACTION_REPLACE);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Gets the current location
+     * @return the current location
+     */
+    public @NonNull String getLocation(){
+        return location;
+    }
+
+    /**
+     * Revisit the current location in the TurbolinksSession.
+     */
+    public void refresh(){
+        visitLocationWithAction(location, ACTION_REPLACE);
     }
 
     // ---------------------------------------------------
@@ -718,7 +758,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param value Restoration ID provided by Turbolinks.
      */
-    private void addRestorationIdentifierToMap(String value) {
+    private void addRestorationIdentifierToMap(@NonNull String value) {
         if (activity != null) {
             restorationIdentifierMap.put(activity.toString(), value);
         }
@@ -765,7 +805,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
     /**
      * <p>Convenience method to simply revisit the current location in the TurbolinksSession. Useful
      * so that different visit logic can be wrappered around this call in {@link #visit} or
-     * {@link #setTurbolinksIsReady(boolean)}</p>
+     * {@link TurbolinksJavascriptInterface#setTurbolinksIsReady(boolean)}</p>
      */
     private void visitCurrentLocationWithTurbolinks() {
         TurbolinksLog.d("Visiting current stored location: " + location);

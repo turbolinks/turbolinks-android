@@ -1,5 +1,7 @@
 package com.basecamp.turbolinks;
 
+import android.support.annotation.NonNull;
+
 /**
  * <p>Defines callbacks that Turbolinks makes available to your app. This interface is required, and
  * should be implemented in an activity (or similar class).</p>
@@ -46,5 +48,5 @@ public interface TurbolinksAdapter {
      * @param location URL to be visited.
      * @param action Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
-    void visitProposedToLocationWithAction(String location, String action);
+    void visitProposedToLocationWithAction(@NonNull String location, @TurbolinksSession.Action String action);
 }

@@ -1,6 +1,7 @@
 package com.basecamp.turbolinks;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 
@@ -15,7 +16,7 @@ public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
      *
      * @param context Refer to SwipeRefreshLayout
      */
-    public TurbolinksSwipeRefreshLayout(Context context) {
+    public TurbolinksSwipeRefreshLayout(@NonNull Context context) {
         super(context);
     }
 
@@ -25,7 +26,7 @@ public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
      * @param context Refer to SwipeRefreshLayout
      * @param attrs Refer to SwipeRefreshLayout
      */
-    public TurbolinksSwipeRefreshLayout(Context context, AttributeSet attrs) {
+    public TurbolinksSwipeRefreshLayout(@NonNull Context context, @NonNull AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -47,5 +48,5 @@ public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
      *
      * @param callback The custom callback to be set
      */
-    public void setCallback(CanScrollUpCallback callback) { this.callback = callback; }
+    public void setCallback(@NonNull CanScrollUpCallback callback) { this.callback = callback; }
 }
