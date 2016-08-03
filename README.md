@@ -1,4 +1,5 @@
 # Turbolinks Android
+[![Build Status on Travis:](https://travis-ci.org/turbolinks/turbolinks-android.svg?branch=master)](https://travis-ci.org/turbolinks/turbolinks-android) [ ![Download](https://api.bintray.com/packages/basecamp/maven/turbolinks-android/images/download.svg) ](https://bintray.com/basecamp/maven/turbolinks-android/_latestVersion)
 
 Turbolinks Android is a native adapter for any [Turbolinks 5](https://github.com/turbolinks/turbolinks#readme) enabled web app. It's built entirely using standard Android tools and conventions.
 
