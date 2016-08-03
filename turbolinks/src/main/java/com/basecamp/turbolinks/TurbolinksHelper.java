@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.MutableContextWrapper;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -32,7 +33,7 @@ class TurbolinksHelper {
      * @param applicationContext An application context.
      * @return The shared WebView.
      */
-    static WebView createWebView(Context applicationContext) {
+    static @NonNull WebView createWebView(@NonNull Context applicationContext) {
         MutableContextWrapper contextWrapper = new MutableContextWrapper(applicationContext);
         WebView webView = new WebView(contextWrapper);
         configureWebViewDefaults(webView);
@@ -47,7 +48,7 @@ class TurbolinksHelper {
      * @param originalUrl Original URL string.
      * @return Encoded, escaped URL string.
      */
-    static String encodeUrl(String originalUrl) {
+    static @NonNull String encodeUrl(@NonNull String originalUrl) {
         try {
             URL newUrl = new URL(originalUrl);
             URI uri = new URI(newUrl.getProtocol(), newUrl.getUserInfo(), newUrl.getHost(), newUrl.getPort(), newUrl.getPath(), newUrl.getQuery(), newUrl.getRef());
@@ -65,7 +66,7 @@ class TurbolinksHelper {
      * @return A base-64 encoded string of the file contents.
      * @throws IOException Typically if a file cannot be found or read in.
      */
-    static String getContentFromAssetFile(Context context, String filePath) throws IOException {
+    static @NonNull String getContentFromAssetFile(@NonNull Context context, @NonNull String filePath) throws IOException {
         InputStream inputStream = context.getAssets().open(filePath);
         byte[] buffer = new byte[inputStream.available()];
         inputStream.read(buffer);
@@ -80,7 +81,7 @@ class TurbolinksHelper {
      * @param context           Any Android context.
      * @param webView           The shared webView.
      */
-    static void injectTurbolinksBridge(final TurbolinksSession turbolinksSession, Context context, WebView webView) {
+    static void injectTurbolinksBridge(@NonNull final TurbolinksSession turbolinksSession, @NonNull Context context,@NonNull WebView webView) {
         try {
             String jsCall = String.format(scriptInjectionFormat, TurbolinksHelper.getContentFromAssetFile(context, "js/turbolinks_bridge.js"));
             runJavascriptRaw(context, webView, jsCall);
@@ -98,7 +99,7 @@ class TurbolinksHelper {
      * @param functionName The Javascript function name only (no parenthesis or parameters).
      * @param params       A comma delimited list of parameter values.
      */
-    static void runJavascript(Context context, final WebView webView, String functionName, Object... params) {
+    static void runJavascript(@NonNull Context context, @NonNull final WebView webView, @NonNull String functionName, Object... params) {
         final String fullJs;
 
         if (params != null) {
@@ -128,7 +129,7 @@ class TurbolinksHelper {
      * @param webView    The shared webView.
      * @param javascript The raw Javascript to be executed, fully escaped/encoded in advance.
      */
-    static void runJavascriptRaw(Context context, final WebView webView, final String javascript) {
+    static void runJavascriptRaw(@NonNull Context context, @NonNull final WebView webView, @NonNull final String javascript) {
         runOnMainThread(context, new Runnable() {
             @Override
             public void run() {
@@ -143,7 +144,7 @@ class TurbolinksHelper {
      * @param context  An activity context.
      * @param runnable A runnable to execute on the main thread.
      */
-    static void runOnMainThread(Context context, Runnable runnable) {
+    static void runOnMainThread(@NonNull Context context, @NonNull Runnable runnable) {
         Handler handler = new Handler(context.getMainLooper());
         handler.post(runnable);
     }
@@ -159,7 +160,7 @@ class TurbolinksHelper {
      * @param webView The shared webView.
      */
     @SuppressLint("SetJavaScriptEnabled")
-    private static void configureWebViewDefaults(WebView webView) {
+    private static void configureWebViewDefaults(@NonNull WebView webView) {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);

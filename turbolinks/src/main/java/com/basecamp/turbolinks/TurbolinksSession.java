@@ -9,6 +9,11 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.IdRes;
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -21,6 +26,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -58,6 +65,11 @@ public class TurbolinksSession implements CanScrollUpCallback {
     // Final vars
     // ---------------------------------------------------
 
+
+    @StringDef({ACTION_ADVANCE, ACTION_REPLACE, ACTION_RESTORE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface Action {}
+
     public static final String ACTION_ADVANCE = "advance";
     static final String ACTION_RESTORE = "restore";
     public static final String ACTION_REPLACE = "replace";
@@ -84,7 +96,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitProposedToLocationWithAction(final String location, final String action) {
+        public void visitProposedToLocationWithAction(@NonNull final String location, @Action @NonNull final String action) {
             TurbolinksLog.d("visitProposedToLocationWithAction called");
 
             TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
@@ -103,7 +115,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitStarted(String visitIdentifier, boolean visitHasCachedSnapshot) {
+        public void visitStarted(@NonNull String visitIdentifier, boolean visitHasCachedSnapshot) {
             TurbolinksLog.d("visitStarted called");
 
             currentVisitIdentifier = visitIdentifier;
@@ -121,7 +133,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitRequestCompleted(String visitIdentifier) {
+        public void visitRequestCompleted(@NonNull String visitIdentifier) {
             TurbolinksLog.d("visitRequestCompleted called");
 
             if (TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
@@ -137,7 +149,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitRequestFailedWithStatusCode(final String visitIdentifier, final int statusCode) {
+        public void visitRequestFailedWithStatusCode(@NonNull final String visitIdentifier, final int statusCode) {
             TurbolinksLog.d("visitRequestFailedWithStatusCode called");
             hideProgressView(visitIdentifier);
 
@@ -159,7 +171,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitRendered(String visitIdentifier) {
+        public void visitRendered(@NonNull String visitIdentifier) {
             TurbolinksLog.d("visitRendered called, hiding progress view for identifier: " + visitIdentifier);
             hideProgressView(visitIdentifier);
         }
@@ -174,7 +186,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void visitCompleted(String visitIdentifier, String restorationIdentifier) {
+        public void visitCompleted(@NonNull String visitIdentifier, @NonNull String restorationIdentifier) {
             TurbolinksLog.d("visitCompleted called");
 
             addRestorationIdentifierToMap(restorationIdentifier);
@@ -222,7 +234,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
          */
         @SuppressWarnings("unused")
         @android.webkit.JavascriptInterface
-        public void hideProgressView(final String visitIdentifier) {
+        public void hideProgressView(@NonNull final String visitIdentifier) {
             TurbolinksHelper.runOnMainThread(applicationContext, new Runnable() {
                 @Override
                 public void run() {
@@ -362,6 +374,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
              * override in that situation, since Turbolinks is not yet ready.
              * http://stackoverflow.com/a/6739042/3280911
              */
+            @SuppressWarnings("deprecation")
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String location) {
                 return internalShouldOverrideUrlLoading(view, location);
@@ -422,7 +435,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param context Any Android context.
      * @return TurbolinksSession to be managed by the calling application.
      */
-    public static TurbolinksSession getNew(Context context) {
+    public static @NonNull  TurbolinksSession getNew(@NonNull Context context) {
         TurbolinksLog.d("TurbolinksSession getNew called");
 
         return new TurbolinksSession(context);
@@ -435,7 +448,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param context Any Android context.
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
-    public static TurbolinksSession getDefault(Context context) {
+    public static @NonNull TurbolinksSession getDefault(@NonNull Context context) {
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
@@ -470,7 +483,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param activity An Android Activity, one per visit.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession activity(Activity activity) {
+    public @NonNull TurbolinksSession activity(@NonNull Activity activity) {
         this.activity = activity;
 
         Context webViewContext = webView.getContext();
@@ -488,7 +501,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param turbolinksAdapter Any class that implements {@link TurbolinksAdapter}.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession adapter(TurbolinksAdapter turbolinksAdapter) {
+    public @NonNull TurbolinksSession adapter(@NonNull TurbolinksAdapter turbolinksAdapter) {
         this.turbolinksAdapter = turbolinksAdapter;
         return this;
     }
@@ -501,7 +514,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param turbolinksView An inflated TurbolinksView from your custom layout.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession view(TurbolinksView turbolinksView) {
+    public @NonNull TurbolinksSession view(@NonNull TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
         this.turbolinksView.attachWebView(webView, swipeRefreshLayout, screenshotsEnabled, pullToRefreshEnabled);
 
@@ -514,7 +527,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param location The URL to visit.
      */
-    public void visit(String location) {
+    public void visit(@NonNull String location) {
         TurbolinksLog.d("visit called");
 
         this.location = location;
@@ -558,7 +571,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *                               inside the progress view (default is 500 ms).
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession progressView(View progressView, int progressIndicatorResId, int progressIndicatorDelay) {
+    public @NonNull TurbolinksSession progressView(@NonNull View progressView, @IdRes int progressIndicatorResId, @IntRange(from = 0) int progressIndicatorDelay) {
         this.progressView = progressView;
         this.progressIndicator = progressView.findViewById(progressIndicatorResId);
         this.progressIndicatorDelay = progressIndicatorDelay;
@@ -579,7 +592,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *                                  scroll position.
      * @return The TurbolinksSession to continue the chained calls.
      */
-    public TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
+    public @NonNull TurbolinksSession restoreWithCachedSnapshot(boolean restoreWithCachedSnapshot) {
         this.restoreWithCachedSnapshot = restoreWithCachedSnapshot;
         return this;
     }
@@ -596,7 +609,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param name   The unique name for the interface (must not use the reserved name "TurbolinksNative")
      */
     @SuppressLint("JavascriptInterface")
-    public void addJavascriptInterface(Object object, String name) {
+    public void addJavascriptInterface(@NonNull Object object, @NonNull String name) {
         if (TextUtils.equals(name, JAVASCRIPT_INTERFACE_NAME)) {
             throw new IllegalArgumentException(JAVASCRIPT_INTERFACE_NAME + " is a reserved Javascript Interface name.");
         }
@@ -614,7 +627,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @return The attached activity.
      */
-    public Activity getActivity() {
+    public @NonNull  Activity getActivity() {
         return activity;
     }
 
@@ -623,7 +636,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @return The WebView used by Turbolinks.
      */
-    public WebView getWebView() {
+    public @NonNull WebView getWebView() {
         return webView;
     }
 
@@ -643,7 +656,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param functionName The name of the function, without any parenthesis or params
      * @param params       A comma delimited list of params. Params will be automatically JSONified.
      */
-    public void runJavascript(final String functionName, final Object... params) {
+    public void runJavascript(@NonNull final String functionName, @NonNull final Object... params) {
         TurbolinksHelper.runJavascript(applicationContext, webView, functionName, params);
     }
 
@@ -652,7 +665,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param rawJavascript The full Javascript string that will be executed by the WebView.
      */
-    public void runJavascriptRaw(String rawJavascript) {
+    public void runJavascriptRaw(@NonNull String rawJavascript) {
         TurbolinksHelper.runJavascriptRaw(applicationContext, webView, rawJavascript);
     }
 
@@ -700,7 +713,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * @param location URL to visit.
      * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
-    public void visitLocationWithAction(String location, String action) {
+    public void visitLocationWithAction(@NonNull String location, @Action @NonNull String action) {
         this.location = location;
         runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
     }
@@ -725,7 +738,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      * Gets the current location
      * @return the current location
      */
-    public String getLocation(){
+    public @NonNull String getLocation(){
         return location;
     }
 
@@ -745,7 +758,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
      *
      * @param value Restoration ID provided by Turbolinks.
      */
-    private void addRestorationIdentifierToMap(String value) {
+    private void addRestorationIdentifierToMap(@NonNull String value) {
         if (activity != null) {
             restorationIdentifierMap.put(activity.toString(), value);
         }
