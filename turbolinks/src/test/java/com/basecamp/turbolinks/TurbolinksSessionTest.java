@@ -17,7 +17,7 @@ import static org.mockito.Matchers.any;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = TestBuildConfig.class)
-public class TurbolinkSessionTest extends BaseTest {
+public class TurbolinksSessionTest extends BaseTest {
     @Mock Activity activity;
     @Mock TurbolinksAdapter adapter;
     @Mock FrameLayout progressView;
