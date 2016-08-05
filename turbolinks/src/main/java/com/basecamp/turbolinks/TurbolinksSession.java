@@ -38,6 +38,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
     boolean turbolinksIsReady; // Script finished and TL fully instantiated
     boolean screenshotsEnabled;
     boolean pullToRefreshEnabled;
+    boolean webViewAttachedToNewParent;
     int progressIndicatorDelay;
     long previousOverrideTime;
     Activity activity;
@@ -82,6 +83,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
         this.applicationContext = context.getApplicationContext();
         this.screenshotsEnabled = true;
         this.pullToRefreshEnabled = true;
+        this.webViewAttachedToNewParent = false;
 
         this.webView = TurbolinksHelper.createWebView(applicationContext);
         this.webView.addJavascriptInterface(this, JAVASCRIPT_INTERFACE_NAME);
@@ -259,7 +261,7 @@ public class TurbolinksSession implements CanScrollUpCallback {
                 visitLocationWithAction(location, ACTION_REPLACE);
             }
         });
-        this.turbolinksView.attachWebView(webView, screenshotsEnabled, pullToRefreshEnabled);
+        this.webViewAttachedToNewParent = this.turbolinksView.attachWebView(webView, screenshotsEnabled, pullToRefreshEnabled);
 
         return this;
     }
@@ -276,7 +278,10 @@ public class TurbolinksSession implements CanScrollUpCallback {
         this.location = location;
 
         validateRequiredParams();
-        initProgressView();
+
+        if (webViewAttachedToNewParent) {
+            initProgressView();
+        }
 
         if (turbolinksIsReady) {
             visitCurrentLocationWithTurbolinks();

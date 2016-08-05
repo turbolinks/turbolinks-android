@@ -146,12 +146,10 @@ public class TurbolinksView extends FrameLayout {
      * @param webView The shared webView.
      * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
+     * @return True if the webView has been attached to a new parent, otherwise false
      */
-    void attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
-        if (webView.getParent() == refreshLayout) {
-            hideProgress();
-            return;
-        }
+    boolean attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
+        if (webView.getParent() == refreshLayout) return false;
 
         refreshLayout.setEnabled(pullToRefreshEnabled);
 
@@ -169,6 +167,7 @@ public class TurbolinksView extends FrameLayout {
         }
 
         refreshLayout.addView(webView);
+        return true;
     }
 
     /**
