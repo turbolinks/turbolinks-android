@@ -17,16 +17,16 @@ import static org.mockito.Matchers.any;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = TestBuildConfig.class)
-public class TurbolinkSessionTest extends BaseTest {
+public class TurbolinksSessionTest extends BaseTest {
     @Mock Activity activity;
     @Mock TurbolinksAdapter adapter;
-    @Mock TurbolinksView view;
     @Mock FrameLayout progressView;
 
     private static final String LOCATION = "https://basecamp.com";
     private static final String VISIT_IDENTIFIER = "visitIdentifierValue";
     private static final String RESTORATION_IDENTIFIER = "restorationIdentifierValue";
 
+    private TurbolinksView view;
     private TurbolinksSession turbolinksSession;
 
     @Before
@@ -34,6 +34,7 @@ public class TurbolinkSessionTest extends BaseTest {
         super.setup();
         MockitoAnnotations.initMocks(this);
 
+        view = new TurbolinksView(context);
         turbolinksSession = TurbolinksSession.getNew(context);
     }
 
@@ -154,7 +155,8 @@ public class TurbolinkSessionTest extends BaseTest {
         TurbolinksTestActivity activity = new TurbolinksTestActivity();
 
         turbolinksSession.activity(activity)
-            .adapter(adapter);
+            .adapter(adapter)
+            .view(view);
         turbolinksSession.currentVisitIdentifier = VISIT_IDENTIFIER;
         turbolinksSession.visitCompleted(VISIT_IDENTIFIER, RESTORATION_IDENTIFIER);
 
