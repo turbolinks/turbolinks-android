@@ -150,6 +150,12 @@ The library will automatically fall back to cold booting the location (which it 
 ### Overriding Default TurbolinksSession Settings
 There are some optional features in TurbolinksSession that are enabled by default.
 
+#### Bitmap Screenshots
+When the Turbolinks `WebView` is detached from an activity, a bitmap screenshot of the view is automatically created and displayed when the Activity is resumed - until the html snapshot data for the url is restored in the `WebView`. This gives the illusion that the `WebView` was never detached and no visual flicker is seen. To disable this behavior, simply call:
+```java
+turbolinksSession.setScreenshotsEnabled(false);
+```
+
 #### Pull To Refresh
 Refreshes the TurbolinksView when a user swipes down from the top of the view.
 To disable simply call:
