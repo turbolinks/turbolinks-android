@@ -7,15 +7,15 @@ import android.util.AttributeSet;
 /**
  * <p>Custom SwipeRefreshLayout for Turbolinks.</p>
  */
-public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
-    private CanScrollUpCallback callback;
+class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
+    private TurbolinksScrollUpCallback callback;
 
     /**
      * <p>Constructor to match SwipeRefreshLayout</p>
      *
      * @param context Refer to SwipeRefreshLayout
      */
-    public TurbolinksSwipeRefreshLayout(Context context) {
+    TurbolinksSwipeRefreshLayout(Context context) {
         super(context);
     }
 
@@ -25,7 +25,7 @@ public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
      * @param context Refer to SwipeRefreshLayout
      * @param attrs Refer to SwipeRefreshLayout
      */
-    public TurbolinksSwipeRefreshLayout(Context context, AttributeSet attrs) {
+    TurbolinksSwipeRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -47,5 +47,5 @@ public class TurbolinksSwipeRefreshLayout extends SwipeRefreshLayout {
      *
      * @param callback The custom callback to be set
      */
-    public void setCallback(CanScrollUpCallback callback) { this.callback = callback; }
+    void setCallback(TurbolinksScrollUpCallback callback) { this.callback = callback; }
 }

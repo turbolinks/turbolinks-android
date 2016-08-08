@@ -26,7 +26,7 @@ import java.util.HashMap;
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
  */
-public class TurbolinksSession implements CanScrollUpCallback {
+public class TurbolinksSession implements TurbolinksScrollUpCallback {
 
     // ---------------------------------------------------
     // Package public vars (allows for greater flexibility and access for testing)
