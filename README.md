@@ -145,13 +145,13 @@ This is a callback from Turbolinks telling you that an XHR request has failed.
 
 This is a callback from Turbolinks telling you that a change has been detected in a resource/asset in the `<HEAD>`, and as a result the Turbolinks state has been invalidated. Most likely the web app has been updated while the app was using it.
 
-The library will automatically fall back to cold booting the location (which it must do since resources have been changed) and then will notify you via this callback that the page was invalidated. This is an opportunity for you to clean up any UI state that you might have lingering around that may no longer be valid (like a screenshot, title data, etc.)
+The library will automatically fall back to cold booting the location (which it must do since resources have been changed) and then will notify you via this callback that the page was invalidated. This is an opportunity for you to clean up any UI state that you might have lingering around that may no longer be valid (title data, etc.)
 
 ### Overriding Default TurbolinksSession Settings
 There are some optional features in TurbolinksSession that are enabled by default.
 
 #### Bitmap Screenshots
-When the Turbolinks `WebView` is detached from an activity, a bitmap screenshot of the view is automatically created and displayed when the Activity is resumed - until the html snapshot data for the url is restored in the `WebView`. This gives the illusion that the `WebView` was never detached and no visual flicker is seen. To disable this behavior, simply call:
+When the Turbolinks `WebView` is detached from an activity, a bitmap screenshot of the view is automatically created and later displayed when the activity is resumed - until a copy of the page is restored from cache in the `WebView`. This gives the illusion that the `WebView` was never detached and no visual flicker is seen. To disable this behavior, simply call:
 ```java
 turbolinksSession.setScreenshotsEnabled(false);
 ```
