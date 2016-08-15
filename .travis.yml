@@ -24,3 +24,5 @@ cache:
 branches:
   except:
     - gh-pages
+script:
+    ./gradlew clean testRelease -p turbolinks
