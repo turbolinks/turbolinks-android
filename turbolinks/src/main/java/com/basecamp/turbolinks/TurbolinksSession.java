@@ -279,7 +279,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
 
         validateRequiredParams();
 
-        if (webViewAttachedToNewParent) {
+        if (!turbolinksIsReady || webViewAttachedToNewParent) {
             initProgressView();
         }
 
