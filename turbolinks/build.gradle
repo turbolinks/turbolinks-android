@@ -23,6 +23,10 @@ android {
         targetSdkVersion 24
         versionCode 5
         versionName "1.0.3"
+
+        // Define ProGuard rules for this android library project. These rules will be applied when
+        // a consumer of this library sets 'minifyEnabled true'.
+        consumerProguardFiles 'proguard-consumer-rules.pro'
     }
     buildTypes {
         release {
