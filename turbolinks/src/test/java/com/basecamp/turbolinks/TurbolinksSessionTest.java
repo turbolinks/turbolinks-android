@@ -199,7 +199,7 @@ public class TurbolinksSessionTest extends BaseTest {
         turbolinksSession.currentVisitIdentifier = VISIT_IDENTIFIER;
         turbolinksSession.hideProgressView(VISIT_IDENTIFIER);
 
-        assertThat(turbolinksSession.progressView).isNull();
+        assertThat(turbolinksSession.progressView.getParent()).isNull();
     }
 
 
