@@ -531,7 +531,6 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
                 if (turbolinksIsReady && TextUtils.equals(visitIdentifier, currentVisitIdentifier)) {
                     TurbolinksLog.d("Hiding progress view for visitIdentifier: " + visitIdentifier + ", currentVisitIdentifier: " + currentVisitIdentifier);
                     turbolinksView.hideProgress();
-                    progressView = null;
                 }
             }
         });
