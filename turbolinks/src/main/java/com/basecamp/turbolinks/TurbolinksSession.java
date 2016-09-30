@@ -258,7 +258,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
         this.turbolinksView.getRefreshLayout().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                visitLocationWithAction(location, ACTION_REPLACE);
+                visitLocationWithAction(location, ACTION_ADVANCE);
             }
         });
         this.webViewAttachedToNewParent = this.turbolinksView.attachWebView(webView, screenshotsEnabled, pullToRefreshEnabled);
@@ -279,7 +279,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
 
         validateRequiredParams();
 
-        if (webViewAttachedToNewParent) {
+        if (!turbolinksIsReady || webViewAttachedToNewParent) {
             initProgressView();
         }
 
