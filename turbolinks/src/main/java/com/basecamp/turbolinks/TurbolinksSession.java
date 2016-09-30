@@ -708,6 +708,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
      * @param action   Whether to treat the request as an advance (navigating forward) or a replace (back).
      */
     public void visitLocationWithAction(String location, String action) {
+        this.location = location;
         runJavascript("webView.visitLocationWithActionAndRestorationIdentifier", TurbolinksHelper.encodeUrl(location), action, getRestorationIdentifierFromMap());
     }
 
