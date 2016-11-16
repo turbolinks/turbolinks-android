@@ -109,7 +109,7 @@ public class TurbolinksView extends FrameLayout {
      *              is 500 ms.
      */
     void showProgress(final View progressView, final View progressIndicator, int delay) {
-        TurbolinksLog.d("showProgress called");
+        TurbolinksLog.d("showProgress called TEST FRANK");
 
         // Don't show the progress view if a screenshot is available
         if (screenshotView != null && screenshotOrientation == getOrientation()) return;
