@@ -27,7 +27,7 @@ import android.widget.ImageView;
  * <p>The custom view to add to your activity layout.</p>
  */
 public class TurbolinksView extends FrameLayout {
-    private TurbolinksSwipeRefreshLayout refreshLayout = null;
+//    private TurbolinksSwipeRefreshLayout refreshLayout = null;
     private View progressView = null;
     private ImageView screenshotView = null;
     private int screenshotOrientation = 0;
@@ -87,8 +87,8 @@ public class TurbolinksView extends FrameLayout {
      * <p>Initializes the view in a common places from all constructors.</p>
      */
     private void init() {
-        refreshLayout = new TurbolinksSwipeRefreshLayout(getContext(), null);
-        addView(refreshLayout, 0);
+//        refreshLayout = new TurbolinksSwipeRefreshLayout(getContext(), null);
+//        addView(refreshLayout, 0);
     }
 
     // ---------------------------------------------------
@@ -149,24 +149,26 @@ public class TurbolinksView extends FrameLayout {
      * @return True if the webView has been attached to a new parent, otherwise false
      */
     boolean attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
-        if (webView.getParent() == refreshLayout) return false;
+//        if (webView.getParent() == refreshLayout) return false;
+//
+//        refreshLayout.setEnabled(pullToRefreshEnabled);
+//
+//        if (webView.getParent() instanceof TurbolinksSwipeRefreshLayout) {
+//            TurbolinksSwipeRefreshLayout previousRefreshLayout = (TurbolinksSwipeRefreshLayout) webView.getParent();
+//            TurbolinksView previousTurbolinksView = (TurbolinksView) previousRefreshLayout.getParent();
+//
+//            if (screenshotsEnabled) previousTurbolinksView.screenshotView();
+//            previousRefreshLayout.removeView(webView);
+//        }
+//
+//        // Set the webview background to match the container background
+//        if (getBackground() instanceof ColorDrawable) {
+//            webView.setBackgroundColor(((ColorDrawable) getBackground()).getColor());
+//        }
+//
+//        refreshLayout.addView(webView);
+        this.addView(webView, 0);
 
-        refreshLayout.setEnabled(pullToRefreshEnabled);
-
-        if (webView.getParent() instanceof TurbolinksSwipeRefreshLayout) {
-            TurbolinksSwipeRefreshLayout previousRefreshLayout = (TurbolinksSwipeRefreshLayout) webView.getParent();
-            TurbolinksView previousTurbolinksView = (TurbolinksView) previousRefreshLayout.getParent();
-
-            if (screenshotsEnabled) previousTurbolinksView.screenshotView();
-            previousRefreshLayout.removeView(webView);
-        }
-
-        // Set the webview background to match the container background
-        if (getBackground() instanceof ColorDrawable) {
-            webView.setBackgroundColor(((ColorDrawable) getBackground()).getColor());
-        }
-
-        refreshLayout.addView(webView);
         return true;
     }
 
@@ -175,7 +177,8 @@ public class TurbolinksView extends FrameLayout {
      * @return The internal refresh layout.
      */
     TurbolinksSwipeRefreshLayout getRefreshLayout() {
-        return refreshLayout;
+        //return refreshLayout;
+        return null;
     }
 
     /**

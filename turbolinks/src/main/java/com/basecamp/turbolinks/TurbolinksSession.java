@@ -82,7 +82,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
 
         this.applicationContext = context.getApplicationContext();
         this.screenshotsEnabled = true;
-        this.pullToRefreshEnabled = true;
+        this.pullToRefreshEnabled = false;
         this.webViewAttachedToNewParent = false;
 
         this.webView = TurbolinksHelper.createWebView(applicationContext);
@@ -254,13 +254,13 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
      */
     public TurbolinksSession view(TurbolinksView turbolinksView) {
         this.turbolinksView = turbolinksView;
-        this.turbolinksView.getRefreshLayout().setCallback(this);
-        this.turbolinksView.getRefreshLayout().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                visitLocationWithAction(location, ACTION_ADVANCE);
-            }
-        });
+//        this.turbolinksView.getRefreshLayout().setCallback(this);
+//        this.turbolinksView.getRefreshLayout().setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                visitLocationWithAction(location, ACTION_ADVANCE);
+//            }
+//        });
         this.webViewAttachedToNewParent = this.turbolinksView.attachWebView(webView, screenshotsEnabled, pullToRefreshEnabled);
 
         return this;
