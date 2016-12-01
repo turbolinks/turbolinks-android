@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.MutableContextWrapper;
 import android.os.Handler;
 import android.util.Base64;
+import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import android.widget.FrameLayout;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -36,6 +38,8 @@ class TurbolinksHelper {
         MutableContextWrapper contextWrapper = new MutableContextWrapper(applicationContext);
         WebView webView = new WebView(contextWrapper);
         configureWebViewDefaults(webView);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        webView.setLayoutParams(params);
 
         return webView;
     }
