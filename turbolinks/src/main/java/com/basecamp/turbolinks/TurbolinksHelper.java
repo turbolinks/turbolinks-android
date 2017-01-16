@@ -177,8 +177,7 @@ class TurbolinksHelper {
      * @param webView The shared webView.
      */
     private static void setWebViewLayoutParams(WebView webView) {
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         webView.setLayoutParams(params);
     }
 }
