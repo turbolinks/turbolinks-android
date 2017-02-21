@@ -148,7 +148,7 @@ public class TurbolinksView extends FrameLayout {
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      * @return True if the webView has been attached to a new parent, otherwise false
      */
-    boolean attachWebView(WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
+    boolean attachWebView(final WebView webView, boolean screenshotsEnabled, boolean pullToRefreshEnabled) {
         if (webView.getParent() == refreshLayout) return false;
 
         refreshLayout.setEnabled(pullToRefreshEnabled);
@@ -166,7 +166,15 @@ public class TurbolinksView extends FrameLayout {
             webView.setBackgroundColor(((ColorDrawable) getBackground()).getColor());
         }
 
-        refreshLayout.addView(webView);
+        // Add the webview to its new parent. Some issues were seen when the
+        // webview needed to change sizes according to its parent, so perform
+        // inside a View.post()
+        refreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                refreshLayout.addView(webView);
+            }
+        });
         return true;
     }
 
