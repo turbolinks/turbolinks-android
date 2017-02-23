@@ -21,8 +21,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 6
-        versionName "1.0.4"
+        versionCode 7
+        versionName "1.0.5"
 
         // Define ProGuard rules for this android library project. These rules will be applied when
         // a consumer of this library sets 'minifyEnabled true'.
@@ -57,7 +57,7 @@ ext {
 
     libraryName = 'Turbolinks Android'
     libraryDescription = 'Turbolinks for Android'
-    libraryVersion = '1.0.4'
+    libraryVersion = '1.0.5'
 
     siteUrl = 'https://github.com/basecamp/turbolinks-android'
     gitUrl = 'https://github.com/basecamp/turbolinks-android.git'
