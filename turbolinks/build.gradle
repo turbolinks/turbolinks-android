@@ -21,8 +21,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 7
-        versionName "1.0.5"
+        versionCode 8
+        versionName "1.0.6"
 
         // Define ProGuard rules for this android library project. These rules will be applied when
         // a consumer of this library sets 'minifyEnabled true'.
