@@ -4,6 +4,7 @@ apply plugin: 'com.jfrog.bintray'
 
 buildscript {
     ext.supportLibVersion = '25.1.1'
+    ext.libVersionName = '1.0.6'
 
     repositories {
         jcenter()
@@ -22,7 +23,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 25
         versionCode 8
-        versionName "1.0.6"
+        versionName "$libVersionName"
 
         // Define ProGuard rules for this android library project. These rules will be applied when
         // a consumer of this library sets 'minifyEnabled true'.
@@ -57,7 +58,7 @@ ext {
 
     libraryName = 'Turbolinks Android'
     libraryDescription = 'Turbolinks for Android'
-    libraryVersion = '1.0.5'
+    libraryVersion = "$libVersionName"
 
     siteUrl = 'https://github.com/basecamp/turbolinks-android'
     gitUrl = 'https://github.com/basecamp/turbolinks-android.git'
