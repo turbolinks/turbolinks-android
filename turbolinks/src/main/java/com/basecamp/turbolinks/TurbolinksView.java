@@ -50,7 +50,7 @@ public class TurbolinksView extends FrameLayout {
      * <p>Constructor to match FrameLayout.</p>
      *
      * @param context Refer to FrameLayout.
-     * @param attrs Refer to FrameLayout.
+     * @param attrs   Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -60,8 +60,8 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context Refer to FrameLayout.
-     * @param attrs Refer to FrameLayout.
+     * @param context      Refer to FrameLayout.
+     * @param attrs        Refer to FrameLayout.
      * @param defStyleAttr Refer to FrameLayout.
      */
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -72,10 +72,10 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Constructor to match FrameLayout.</p>
      *
-     * @param context Refer to FrameLayout.
-     * @param attrs Refer to FrameLayout.
+     * @param context      Refer to FrameLayout.
+     * @param attrs        Refer to FrameLayout.
      * @param defStyleAttr Refer to FrameLayout.
-     * @param defStyleRes Refer to FrameLayout.
+     * @param defStyleRes  Refer to FrameLayout.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public TurbolinksView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -103,10 +103,10 @@ public class TurbolinksView extends FrameLayout {
      * <p>Progress indicator is set to a specified delay before displaying -- a very short delay
      * (like 500 ms) can improve perceived loading time to the user.</p>
      *
-     * @param progressView The progressView to display on top of TurbolinksView.
+     * @param progressView      The progressView to display on top of TurbolinksView.
      * @param progressIndicator The progressIndicator to display in the view.
-     * @param delay The delay before showing the progressIndicator in the view. The default progress view
-     *              is 500 ms.
+     * @param delay             The delay before showing the progressIndicator in the view. The default progress view
+     *                          is 500 ms.
      */
     void showProgress(final View progressView, final View progressIndicator, int delay) {
         TurbolinksLog.d("showProgress called");
@@ -143,8 +143,8 @@ public class TurbolinksView extends FrameLayout {
     /**
      * <p>Attach the swipeRefreshLayout, which contains the shared webView, to the TurbolinksView.</p>
      *
-     * @param webView The shared webView.
-     * @param screenshotsEnabled Indicates whether screenshots are enabled for the current session.
+     * @param webView              The shared webView.
+     * @param screenshotsEnabled   Indicates whether screenshots are enabled for the current session.
      * @param pullToRefreshEnabled Indicates whether pull to refresh is enabled for the current session.
      * @return True if the webView has been attached to a new parent, otherwise false
      */
@@ -172,6 +172,7 @@ public class TurbolinksView extends FrameLayout {
 
     /**
      * <p>Gets the refresh layout used internally for pull-to-refresh functionality.</p>
+     *
      * @return The internal refresh layout.
      */
     TurbolinksSwipeRefreshLayout getRefreshLayout() {
@@ -222,9 +223,12 @@ public class TurbolinksView extends FrameLayout {
 
     /**
      * <p>Creates a bitmap screenshot of the webview contents from the canvas.</p>
+     *
      * @return The screenshot of the webview contents.
      */
     private Bitmap getScreenshotBitmap() {
+        if (!hasEnoughHeapMemoryForScreenshot()) return null;
+
         if (getWidth() <= 0 || getHeight() <= 0) return null;
 
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
@@ -234,9 +238,29 @@ public class TurbolinksView extends FrameLayout {
 
     /**
      * Gets the current orientation of the device.
+     *
      * @return The current orientation.
      */
     private int getOrientation() {
         return getContext().getResources().getConfiguration().orientation;
+    }
+
+    /**
+     * Determines if the app's memory heap has enough space to create a bitmapped screenshot without
+     * running into an OOM.
+     *
+     * @return Whether the heap has over a given % of memory available.
+     */
+    private boolean hasEnoughHeapMemoryForScreenshot() {
+        final Runtime runtime = Runtime.getRuntime();
+
+        // Auto casting to floats necessary for division
+        float free = runtime.freeMemory();
+        float total = runtime.totalMemory();
+        float remaining = free / total;
+
+        TurbolinksLog.d("Memory remaining percentage: " + remaining);
+
+        return remaining > .10;
     }
 }
