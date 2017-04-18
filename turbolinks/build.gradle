@@ -4,7 +4,7 @@ apply plugin: 'com.jfrog.bintray'
 
 buildscript {
     ext.supportLibVersion = '25.1.1'
-    ext.libVersionName = '1.0.6'
+    ext.libVersionName = '1.0.7'
 
     repositories {
         jcenter()
@@ -22,7 +22,7 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 8
+        versionCode 9
         versionName "$libVersionName"
 
         // Define ProGuard rules for this android library project. These rules will be applied when
