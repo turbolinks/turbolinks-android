@@ -668,7 +668,7 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
      *
      * @param enabled If true debug logging is enabled.
      */
-    public void setDebugLoggingEnabled(boolean enabled) {
+    public static void setDebugLoggingEnabled(boolean enabled) {
         TurbolinksLog.setDebugLoggingEnabled(enabled);
     }
 
