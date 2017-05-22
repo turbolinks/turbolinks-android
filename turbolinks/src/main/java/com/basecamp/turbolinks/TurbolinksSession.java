@@ -187,6 +187,10 @@ public class TurbolinksSession implements TurbolinksScrollUpCallback {
      * @return The default, static instance of a TurbolinksSession, guaranteed to not be null.
      */
     public static TurbolinksSession getDefault(Context context) {
+        if (defaultInstance != null && !defaultInstance.turbolinksIsReady()) {
+            defaultInstance = null;
+        }
+
         if (defaultInstance == null) {
             synchronized (TurbolinksSession.class) {
                 if (defaultInstance == null) {
