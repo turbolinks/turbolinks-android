@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.basecamp:turbolinks:1.0.7'
+    compile 'com.basecamp:turbolinks:1.0.8'
 }
 ```
 
