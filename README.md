@@ -68,7 +68,7 @@ Right off the bat, you don't need to worry about handling every callback, especi
 
 **But at the very minimum, you must handle the [visitProposedToLocationWithAction](#visitproposedtolocationwithaction)**. Otherwise your app won't know what to do when a link is clicked inside a WebView.
 
-Beyond this README, you can get a good feel for the callbacks from the [Javadoc](http://turbolinks.github.io/turbolinks-android/) and the [demo app](/demoapp).
+Beyond this `README`, you can get a good feel for the callbacks from the [Javadoc](http://turbolinks.github.io/turbolinks-android/) and the [demo app](/demoapp).
 
 ### 3. Get the Default TurbolinksSession and Visit a Location
 
@@ -283,7 +283,7 @@ Turbolinks Android was created by [Dan Kim](https://twitter.com/dankim) and [Jay
 #### From Android Studio:
 
 - Open the [project's Gradle file](build.gradle).
-- In the menu, choose Build --> Rebuild project.
+- In the menu, choose `Build` --> `Rebuild project`.
 
 #### From command line:
 
