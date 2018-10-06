@@ -54,7 +54,11 @@ TLWebView.prototype = {
     // -----------------------------------------------------------------------
 
     visitProposedToLocationWithAction: function(location, action) {
-        TurbolinksNative.visitProposedToLocationWithAction(location.absoluteURL, action);
+        if (this.controller.locationIsSamePageAnchor(location)) {
+            this.controller.scrollToAnchor(location.anchor);
+        } else {
+            TurbolinksNative.visitProposedToLocationWithAction(location.absoluteURL, action);
+        }
     },
 
     visitStarted: function(visit) {
