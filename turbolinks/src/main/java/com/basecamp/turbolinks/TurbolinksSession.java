@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +21,8 @@ import android.webkit.WebViewClient;
 
 import java.util.Date;
 import java.util.HashMap;
+
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 /**
  * <p>The main concrete class to use Turbolinks 5 in your app.</p>
