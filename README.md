@@ -1,3 +1,10 @@
+# DEPRECATED
+Turbolinks Android 1.x is deprecated. Existing projects built with this version of the adapter will continue to work, although there may be some slow memory leaks and other minor issues. We will not be maintaining this adapter any further beyond whatever emergency fixes might be necesssary. We'd encourage you to read the [detailed explanation for why we deprecated this library](https://github.com/turbolinks/turbolinks-android/wiki/Turbolinks-Android-Adapter-1.x-Deprecation).
+
+Also, we are very early in the prototype stage for Turbolinks Android 2.0. We still don’t know the exact shape or even a rough timeline of when it might be available, but we plan to have something available in 2019.
+
+Thank you for supporting Turbolinks Android 1.0, and we’re excited to share 2.0 when the time comes.
+
 # Turbolinks Android
 [![Build Status on Travis:](https://travis-ci.org/turbolinks/turbolinks-android.svg?branch=master)](https://travis-ci.org/turbolinks/turbolinks-android) [ ![Download](https://api.bintray.com/packages/basecamp/maven/turbolinks-android/images/download.svg) ](https://bintray.com/basecamp/maven/turbolinks-android/_latestVersion)
 
